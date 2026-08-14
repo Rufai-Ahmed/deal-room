@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /$
+Allow: /login
+Allow: /register
+
+# Shared documents must never be indexed. These paths carry an investor's
+# fundraising material behind an unguessable token.
+Disallow: /s/
+Disallow: /view/
+Disallow: /documents
+Disallow: /api/
+
+Sitemap: https://dealroom.rufaiahmed.com/sitemap.xml

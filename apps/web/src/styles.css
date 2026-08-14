@@ -1,1 +1,106 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/inter-tight/index.css';
+@import '@fontsource-variable/jetbrains-mono/index.css';
+
+@theme {
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-sans: 'Inter Tight Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --color-paper: #fbfaf8;
+  --color-paper-sunk: #f4f2ee;
+  --color-paper-raised: #ffffff;
+  --color-ink: #101215;
+  --color-ink-soft: #4a4740;
+  --color-ink-faint: #8a847a;
+  --color-rule: #e3ded4;
+  --color-rule-strong: #d3ccbe;
+
+  --color-brand: #14523c;
+  --color-brand-soft: #e6efe9;
+  --color-brand-ink: #0d3527;
+
+  --color-signal: #b4741c;
+  --color-signal-soft: #f6eddd;
+
+  --color-danger: #9a2f24;
+  --color-danger-soft: #f7e8e5;
+
+  --radius-card: 12px;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+    --color-paper: #0c0d0f;
+    --color-paper-sunk: #131519;
+    --color-paper-raised: #17191e;
+    --color-ink: #edebe7;
+    --color-ink-soft: #a8a49c;
+    --color-ink-faint: #6f6b64;
+    --color-rule: #24262b;
+    --color-rule-strong: #33363d;
+
+    --color-brand: #63b391;
+    --color-brand-soft: #16241e;
+    --color-brand-ink: #d7ece1;
+
+    --color-signal: #d59a4a;
+    --color-signal-soft: #251d12;
+
+    --color-danger: #d98274;
+    --color-danger-soft: #2a1714;
+  }
+
+  * {
+    border-color: var(--color-rule);
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv05', 'ss01';
+  }
+
+  ::selection {
+    background: var(--color-brand);
+    color: var(--color-paper);
+  }
+}
+
+@utility numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.02em;
+}
+
+@utility eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+@utility rule-grid {
+  background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-rule) 55%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-rule) 55%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 28px 28px;
+}
