@@ -2,6 +2,13 @@ packages:
   - 'apps/*'
   - 'libs/*'
 
+# Nest resolves these through peer dependencies. If more than one copy ends up
+# in the tree they keep separate decorator metadata stores, and validation of
+# nested DTOs silently degrades to "property should not exist".
+overrides:
+  class-validator: 0.14.4
+  class-transformer: 0.5.1
+
 allowBuilds:
   unrs-resolver: true
   '@swc/core': true
@@ -10,7 +17,6 @@ allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
   prisma: true
-  argon2: true
   less: true
   esbuild: true
   nx: true
