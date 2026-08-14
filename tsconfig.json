@@ -2,6 +2,16 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": [],
+  "references": [
+    {
+      "path": "./apps/api"
+    },
+    {
+      "path": "./apps/web"
+    },
+    {
+      "path": "./libs/shared"
+    }
+  ],
   "compilerOptions": {}
 }

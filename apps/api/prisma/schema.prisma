@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String?
+  googleId     String?  @unique
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  documents Document[]
+  comments  Comment[]
+
+  @@map("users")
+}
+
+model Document {
+  id         String    @id @default(cuid())
+  ownerId    String
+  name       String
+  fileKey    String
+  mimeType   String
+  sizeBytes  Int
+  pageCount  Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
+
+  owner      User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  shareLinks ShareLink[]
+
+  @@index([ownerId, createdAt])
+  @@map("documents")
+}
+
+model ShareLink {
+  id             String    @id @default(cuid())
+  documentId     String
+  token          String    @unique
+  recipientName  String?
+  recipientEmail String?
+  requireEmail   Boolean   @default(true)
+  allowDownload  Boolean   @default(false)
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  document Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  views    DocumentView[]
+  comments Comment[]
+
+  @@index([documentId, createdAt])
+  @@map("share_links")
+}
+
+/// One viewing session. Heartbeats from the viewer extend lastSeenAt and durationMs
+/// rather than creating new rows, so repeat scrolling is not counted as repeat opens.
+model DocumentView {
+  id          String   @id @default(cuid())
+  shareLinkId String
+  openedAt    DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  durationMs  Int      @default(0)
+  viewerEmail String?
+  ipHash      String?
+  userAgent   String?
+  referrer    String?
+  isBot       Boolean  @default(false)
+  botReason   String?
+  device      String?
+  browser     String?
+  os          String?
+  country     String?
+
+  shareLink ShareLink  @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
+  pageViews PageView[]
+
+  @@index([shareLinkId, openedAt])
+  @@index([shareLinkId, isBot])
+  @@map("document_views")
+}
+
+model PageView {
+  id         String @id @default(cuid())
+  viewId     String
+  page       Int
+  durationMs Int    @default(0)
+
+  view DocumentView @relation(fields: [viewId], references: [id], onDelete: Cascade)
+
+  @@unique([viewId, page])
+  @@map("page_views")
+}
+
+/// Threaded against the share link, not the document, so a founder sees which
+/// investor said what without the investor needing an account.
+model Comment {
+  id           String   @id @default(cuid())
+  shareLinkId  String
+  body         String
+  page         Int?
+  authorUserId String?
+  authorEmail  String?
+  authorName   String?
+  createdAt    DateTime @default(now())
+
+  shareLink  ShareLink @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
+  authorUser User?     @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([shareLinkId, createdAt])
+  @@map("comments")
+}
