@@ -27,15 +27,45 @@ const daysAgo = (days: number, hour = 10, minute = 0): Date => {
   return date;
 };
 
+const usingS3 = process.env.STORAGE_DRIVER === 's3';
+
+/// Seeds through whichever driver the environment is configured for, so the
+/// demo account works the same on a deployed instance as it does on a laptop.
 const writeDeck = async (
   ownerId: string,
   slides: Parameters<typeof buildDeck>[1],
   company: string,
 ): Promise<string> => {
   const fileKey = `documents/${ownerId}/${randomUUID()}.pdf`;
+  const body = await buildDeck(company, slides);
+
+  if (usingS3) {
+    const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+    const client = new S3Client({
+      region: process.env.S3_REGION,
+      endpoint: process.env.S3_ENDPOINT,
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY as string,
+      },
+    });
+
+    await client.send(
+      new PutObjectCommand({
+        Bucket: process.env.S3_BUCKET,
+        Key: fileKey,
+        Body: body,
+        ContentType: 'application/pdf',
+      }),
+    );
+
+    return fileKey;
+  }
+
   const target = join(storageRoot, fileKey);
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, await buildDeck(company, slides));
+  await writeFile(target, body);
   return fileKey;
 };
 
@@ -315,7 +345,9 @@ const main = async (): Promise<void> => {
 
   console.log(`Seeded demo founder ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
   console.log(`  ${deck.name}: 3 links, ${views.length} recorded opens`);
-  console.log(`  storage root: ${storageRoot}`);
+  console.log(
+    `  storage: ${usingS3 ? `s3 bucket ${process.env.S3_BUCKET}` : storageRoot}`,
+  );
 };
 
 main()
