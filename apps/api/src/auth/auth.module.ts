@@ -1,23 +1,36 @@
-import { Module, Provider } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { AppConfig } from '../config/app-config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './google.strategy';
 import { JwtStrategy } from './jwt.strategy';
 
-/// Registering the Google strategy unconditionally would crash boot when the
-/// OAuth credentials are absent, so environments without them simply run
-/// password-only and /auth/providers tells the client which buttons to render.
-const googleStrategy: Provider[] = process.env.GOOGLE_CLIENT_ID
-  ? [GoogleStrategy]
-  : [];
-
 @Module({
   imports: [ConfigModule, PassportModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, ...googleStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    {
+      // Constructing the strategy without credentials throws, so it is built
+      // only when Google is configured. This has to be decided here rather than
+      // from process.env at import time: module files are evaluated before
+      // ConfigModule has read .env, which would leave the strategy unregistered
+      // while /auth/providers still advertised the button.
+      provide: GoogleStrategy,
+      inject: [ConfigService, AuthService],
+      useFactory: (
+        config: ConfigService<AppConfig, true>,
+        authService: AuthService,
+      ) =>
+        config.get('google', { infer: true }).clientId
+          ? new GoogleStrategy(config, authService)
+          : null,
+    },
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}
