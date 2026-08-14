@@ -38,9 +38,15 @@ export const detectBot = (userAgent: string | undefined): BotVerdict => {
 
   const normalised = userAgent.toLowerCase();
 
-  const preview = LINK_PREVIEW_AGENTS.find(([needle]) =>
-    normalised.includes(needle),
-  );
+  // Some agents name more than one service. Telegram genuinely identifies as
+  // "TelegramBot (like TwitterBot)", so the earliest match in the string wins
+  // rather than the first entry in this list.
+  const preview = LINK_PREVIEW_AGENTS.map(
+    ([needle, reason]) => [normalised.indexOf(needle), reason] as const,
+  )
+    .filter(([index]) => index >= 0)
+    .sort((a, b) => a[0] - b[0])[0];
+
   if (preview) {
     return { isBot: true, reason: preview[1] };
   }
