@@ -59,3 +59,6 @@ vitest.config.*.timestamp*
 
 # uploads (local storage driver)
 .storage/
+
+# prisma client is generated from the schema at build time
+apps/api/src/generated/
