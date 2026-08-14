@@ -1,5 +1,6 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
+import type { SharedDocumentView } from '@dealroom/shared';
 import {
   useIdentifyViewerMutation,
   usePostViewerCommentMutation,
@@ -38,19 +39,23 @@ const ClosedNotice = ({ heading, body }: { heading: string; body: string }) => (
 
 export const ViewerPage = () => {
   const { token } = useParams({ from: '/view/$token' });
-  const [viewSession, setViewSession] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    setViewSession(readSessionFromHash());
-    setReady(true);
-  }, []);
+  // Read during the first render, not in an effect. The router rewrites the
+  // URL on mount, and an effect would run after the fragment had already gone,
+  // losing the session issued by the /s redirect and double counting the open.
+  const [viewSession] = useState<string | null>(readSessionFromHash);
 
-  const { data, error, isLoading } = useSharedDocumentQuery(
-    { token, viewSessionToken: viewSession },
-    { skip: !ready },
-  );
+  // The identify call returns the unlocked document. Holding it here avoids a
+  // refetch that would otherwise open a second view session.
+  const [identifiedView, setIdentifiedView] =
+    useState<SharedDocumentView | null>(null);
 
+  const { data: fetched, error, isLoading } = useSharedDocumentQuery({
+    token,
+    viewSessionToken: viewSession,
+  });
+
+  const data = identifiedView ?? fetched;
   const activeSession = data?.viewSessionToken ?? viewSession;
   const { setPage } = useViewTracking(
     data?.identified ? activeSession : null,
@@ -62,7 +67,7 @@ export const ViewerPage = () => {
   );
   const [postComment] = usePostViewerCommentMutation();
 
-  if (isLoading || !ready) {
+  if (isLoading && !data) {
     return (
       <div className="grid min-h-dvh place-items-center bg-paper text-ink-faint">
         <Spinner />
@@ -96,7 +101,14 @@ export const ViewerPage = () => {
   }
 
   if (!data.identified) {
-    return <EmailGate token={token} viewSession={activeSession} data={data} />;
+    return (
+      <EmailGate
+        token={token}
+        viewSession={activeSession}
+        data={data}
+        onIdentified={setIdentifiedView}
+      />
+    );
   }
 
   return (
@@ -169,10 +181,12 @@ const EmailGate = ({
   token,
   viewSession,
   data,
+  onIdentified,
 }: {
   token: string;
   viewSession: string | null;
   data: { documentName: string; ownerName: string };
+  onIdentified: (view: SharedDocumentView) => void;
 }) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -180,12 +194,14 @@ const EmailGate = ({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    await identify({
+    const unlocked = await identify({
       token,
       viewSessionToken: viewSession,
       email,
       name: name.trim() || undefined,
     }).unwrap();
+
+    onIdentified(unlocked);
   };
 
   return (
