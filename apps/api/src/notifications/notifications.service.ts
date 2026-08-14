@@ -58,12 +58,23 @@ export class NotificationsService {
     }
 
     try {
-      await this.resend.emails.send({
+      // Resend reports API level failures in the response body rather than by
+      // throwing, so a bad key or rejected recipient is silent unless read.
+      const { error } = await this.resend.emails.send({
         from: this.config.get('mail', { infer: true }).from,
         to,
         subject,
         html,
       });
+
+      if (error) {
+        this.logger.error(
+          `Resend rejected "${subject}" to ${to}: ${error.name} ${error.message}`,
+        );
+        return;
+      }
+
+      this.logger.log(`Sent "${subject}" to ${to}`);
     } catch (error) {
       this.logger.error(`Failed to send "${subject}" to ${to}`, error as Error);
     }
