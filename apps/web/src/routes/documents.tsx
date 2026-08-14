@@ -12,7 +12,7 @@ import { formatBytes, formatRelative } from '../lib/format';
 export const DocumentsPage = () => {
   const [uploadOpen, setUploadOpen] = useState(false);
   const { data: documents, isLoading } = useListDocumentsQuery();
-  const { data: activity } = useActivityFeedQuery();
+  const { data: activity, isLoading: activityLoading } = useActivityFeedQuery();
 
   return (
     <AppShell>
@@ -168,6 +168,17 @@ export const DocumentsPage = () => {
                 </li>
               ))}
             </ul>
+          ) : activityLoading ? (
+            // Without this the empty state shows first, and a slow cold start
+            // makes a populated feed read as "nothing has happened yet".
+            <div className="mt-4 space-y-3" aria-hidden="true">
+              {[0, 1, 2].map((row) => (
+                <div key={row} className="border-l-2 border-rule pl-3.5">
+                  <div className="h-3 w-20 animate-pulse rounded bg-paper-sunk" />
+                  <div className="mt-2 h-3 w-full animate-pulse rounded bg-paper-sunk" />
+                </div>
+              ))}
+            </div>
           ) : (
             <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
               Opens and comments will appear here as investors engage with your
