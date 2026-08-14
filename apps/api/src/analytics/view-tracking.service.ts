@@ -64,9 +64,6 @@ export class ViewTrackingService {
     });
   }
 
-  /// Duration is clamped to the largest value reported so far. A viewer who
-  /// reopens the same tab cannot reduce the recorded time, and a tampered
-  /// payload cannot inflate it beyond the wall clock since the view opened.
   async heartbeat(
     viewId: string,
     durationMs: number,

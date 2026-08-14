@@ -8,8 +8,6 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { AppModule } from './app/app.module';
 import { configureApp } from './configure-app';
 
-/// Held across invocations so a warm instance skips the Nest bootstrap and the
-/// database connection. Only a cold start pays for them.
 let cached: express.Express | null = null;
 
 const bootstrap = async (): Promise<express.Express> => {

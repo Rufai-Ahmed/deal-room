@@ -4,8 +4,6 @@ import { useDispatch } from 'react-redux';
 import { Spinner } from '../components/ui/spinner';
 import { tokenReceived } from '../store/auth.slice';
 
-/// Google sends the browser back with the token in the URL fragment so it never
-/// reaches the server logs or a Referer header.
 export const AuthCallbackPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();

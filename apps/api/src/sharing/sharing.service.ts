@@ -126,8 +126,6 @@ export class SharingService {
     });
   }
 
-  /// Resolves a public token. Anything other than an active link raises 410 so
-  /// the viewer can be told the link is closed rather than that it never existed.
   async resolveActive(token: string) {
     const link = await this.prisma.shareLink.findUnique({
       where: { token },

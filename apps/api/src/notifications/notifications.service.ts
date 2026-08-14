@@ -33,8 +33,6 @@ export class NotificationsService {
     this.resend = apiKey ? new Resend(apiKey) : null;
   }
 
-  /// Never awaited by request handlers. A mail outage must not delay or fail
-  /// the investor's redirect into the document.
   documentOpened(payload: DocumentOpenedPayload): void {
     void this.send(
       payload.to,
@@ -58,8 +56,6 @@ export class NotificationsService {
     }
 
     try {
-      // Resend reports API level failures in the response body rather than by
-      // throwing, so a bad key or rejected recipient is silent unless read.
       const { error } = await this.resend.emails.send({
         from: this.config.get('mail', { infer: true }).from,
         to,

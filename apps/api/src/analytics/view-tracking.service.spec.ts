@@ -52,7 +52,6 @@ describe('ViewTrackingService.heartbeat', () => {
     expect(recorded.pages).toEqual([{ page: 1, durationMs: 60_000 }]);
   });
 
-  // The viewer is unauthenticated, so the reported duration is untrusted input.
   it('clamps a duration longer than the view has existed', async () => {
     const openedAt = new Date(Date.now() - 10_000);
     const { service, recorded } = buildService(openedAt, 0);

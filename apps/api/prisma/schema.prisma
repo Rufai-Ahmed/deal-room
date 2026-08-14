@@ -63,8 +63,6 @@ model ShareLink {
   @@map("share_links")
 }
 
-/// One viewing session. Heartbeats from the viewer extend lastSeenAt and durationMs
-/// rather than creating new rows, so repeat scrolling is not counted as repeat opens.
 model DocumentView {
   id          String   @id @default(cuid())
   shareLinkId String
@@ -103,8 +101,6 @@ model PageView {
   @@map("page_views")
 }
 
-/// Threaded against the share link, not the document, so a founder sees which
-/// investor said what without the investor needing an account.
 model Comment {
   id           String   @id @default(cuid())
   shareLinkId  String

@@ -15,11 +15,6 @@ import { JwtStrategy } from './jwt.strategy';
     AuthService,
     JwtStrategy,
     {
-      // Constructing the strategy without credentials throws, so it is built
-      // only when Google is configured. This has to be decided here rather than
-      // from process.env at import time: module files are evaluated before
-      // ConfigModule has read .env, which would leave the strategy unregistered
-      // while /auth/providers still advertised the button.
       provide: GoogleStrategy,
       inject: [ConfigService, AuthService],
       useFactory: (

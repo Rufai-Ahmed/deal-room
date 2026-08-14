@@ -35,8 +35,6 @@ export interface UpdateShareLinkInput {
   expiresAt?: string | null;
 }
 
-/// Returned to an unauthenticated viewer. fileUrl is withheld until the email
-/// gate is satisfied, so the signed URL never reaches a viewer who has not identified.
 export interface SharedDocumentView {
   documentName: string;
   mimeType: string;

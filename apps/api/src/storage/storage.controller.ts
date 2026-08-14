@@ -17,8 +17,6 @@ import { LocalStorageDriver } from './local.driver';
 import { verifyLocalSignature } from './local-signature';
 import { STORAGE_DRIVER } from './storage.types';
 
-/// Only mounted when the local storage driver is active. In production the
-/// equivalent requests go straight to S3 with presigned URLs.
 @ApiExcludeController()
 @Controller('storage/local')
 export class StorageController {

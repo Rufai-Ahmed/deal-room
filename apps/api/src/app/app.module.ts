@@ -19,8 +19,6 @@ import { HealthController } from './health.controller';
       isGlobal: true,
       load: [appConfig],
       cache: true,
-      // Covers running from the workspace root and from apps/api. Neither file
-      // exists in production, where the host supplies the environment directly.
       envFilePath: ['.env', 'apps/api/.env'],
     }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),

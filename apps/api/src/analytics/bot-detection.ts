@@ -1,10 +1,5 @@
 import { isbot } from 'isbot';
 
-/// Link unfurlers are the reason raw open counts lie. When a founder pastes a
-/// share link into Slack, WhatsApp or Outlook, the platform fetches the URL to
-/// build a preview. Counting those as opens tells the founder an investor read
-/// the deck when nobody has. These are flagged, stored, and excluded from every
-/// figure the founder is shown.
 const LINK_PREVIEW_AGENTS: ReadonlyArray<[string, string]> = [
   ['slackbot', 'Slack link preview'],
   ['slack-imgproxy', 'Slack link preview'],
@@ -38,9 +33,6 @@ export const detectBot = (userAgent: string | undefined): BotVerdict => {
 
   const normalised = userAgent.toLowerCase();
 
-  // Some agents name more than one service. Telegram genuinely identifies as
-  // "TelegramBot (like TwitterBot)", so the earliest match in the string wins
-  // rather than the first entry in this list.
   const preview = LINK_PREVIEW_AGENTS.map(
     ([needle, reason]) => [normalised.indexOf(needle), reason] as const,
   )

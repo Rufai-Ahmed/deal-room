@@ -25,8 +25,6 @@ const baseQueryWithReauth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
 
-  // The viewer routes are deliberately unauthenticated, so a 401 there is a
-  // stale view session rather than a stale login and must not sign anyone out.
   const isViewerRequest =
     typeof args !== 'string' && String(args.url).startsWith('/share');
 

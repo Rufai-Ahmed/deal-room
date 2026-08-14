@@ -11,8 +11,6 @@ interface Slide {
   body: string[];
 }
 
-/// Stand-in fundraising deck so the seeded demo has something real to render,
-/// rather than shipping a binary fixture in the repository.
 export const buildDeck = async (
   company: string,
   slides: Slide[],

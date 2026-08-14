@@ -40,13 +40,8 @@ const ClosedNotice = ({ heading, body }: { heading: string; body: string }) => (
 export const ViewerPage = () => {
   const { token } = useParams({ from: '/view/$token' });
 
-  // Read during the first render, not in an effect. The router rewrites the
-  // URL on mount, and an effect would run after the fragment had already gone,
-  // losing the session issued by the /s redirect and double counting the open.
   const [viewSession] = useState<string | null>(readSessionFromHash);
 
-  // The identify call returns the unlocked document. Holding it here avoids a
-  // refetch that would otherwise open a second view session.
   const [identifiedView, setIdentifiedView] =
     useState<SharedDocumentView | null>(null);
 

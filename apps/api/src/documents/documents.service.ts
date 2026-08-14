@@ -137,8 +137,6 @@ export class DocumentsService {
     return this.storage.createDownloadUrl(document.fileKey);
   }
 
-  /// Bot hits are excluded from every number a founder sees. Unique viewers key
-  /// on the identified email where present and fall back to the hashed IP.
   private async viewStatsFor(
     documentIds: string[],
   ): Promise<

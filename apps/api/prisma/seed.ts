@@ -29,8 +29,6 @@ const daysAgo = (days: number, hour = 10, minute = 0): Date => {
 
 const usingS3 = process.env.STORAGE_DRIVER === 's3';
 
-/// Seeds through whichever driver the environment is configured for, so the
-/// demo account works the same on a deployed instance as it does on a laptop.
 const writeDeck = async (
   ownerId: string,
   slides: Parameters<typeof buildDeck>[1],
@@ -69,8 +67,6 @@ const writeDeck = async (
   return fileKey;
 };
 
-/// Page dwell shaped like a real read: heavy on traction and the ask, light in
-/// the middle, with a few pages never reached.
 const readingPattern = (
   pages: number,
   intensity: number,

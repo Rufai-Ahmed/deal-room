@@ -36,9 +36,6 @@ export class ShareAccessController {
     private readonly config: ConfigService<AppConfig, true>,
   ) {}
 
-  /// The open is recorded here, server side, before the viewer's browser has
-  /// run a line of JavaScript. A client-side ping would miss anyone with
-  /// scripts blocked, and would be trivial to suppress.
   @Get('s/:token')
   async open(
     @Param('token') token: string,

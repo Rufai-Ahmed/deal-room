@@ -12,8 +12,6 @@ const scryptAsync = (
     );
   });
 
-// Memory-hard parameters from RFC 7914. maxmem has to be raised explicitly
-// because 128 * N * r * p exceeds node's 32MB default.
 const COST = 32768;
 const BLOCK_SIZE = 8;
 const PARALLELISATION = 1;

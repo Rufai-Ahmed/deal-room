@@ -3,8 +3,6 @@ import { dirname, join, resolve } from 'node:path';
 import { signLocalKey } from './local-signature';
 import { StorageDriver, UploadTarget } from './storage.types';
 
-/// Development driver. Files land on local disk and are served back through
-/// signed URLs so the viewer path behaves the same as it does against S3.
 export class LocalStorageDriver implements StorageDriver {
   constructor(
     private readonly rootDir: string,

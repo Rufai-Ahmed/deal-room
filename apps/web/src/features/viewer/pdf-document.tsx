@@ -32,7 +32,6 @@ const PdfPage = ({
           if (entry.isIntersecting) {
             setRendered(true);
           }
-          // The page occupying most of the viewport is the one being read.
           if (entry.intersectionRatio > 0.55) {
             onVisible(pageNumber);
           }

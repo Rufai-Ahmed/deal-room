@@ -61,8 +61,6 @@ export class AuthService {
     return this.issueSession(user);
   }
 
-  /// Links by verified email so a founder who signed up with a password can
-  /// later use Google without ending up with two accounts.
   async upsertGoogleUser(identity: GoogleIdentity): Promise<AuthSession> {
     const email = identity.email.toLowerCase();
     const existing = await this.prisma.user.findFirst({

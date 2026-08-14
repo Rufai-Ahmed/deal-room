@@ -8,16 +8,9 @@ import type { Response } from 'express';
 const SWAGGER_CDN = 'https://cdn.jsdelivr.net';
 const SWAGGER_DIST = `${SWAGGER_CDN}/npm/swagger-ui-dist@5`;
 
-/// Shared by the long-running server and the serverless entry point so the two
-/// cannot drift apart on security headers or validation rules.
 export const configureApp = (app: NestExpressApplication): void => {
-  // Vercel and most proxies terminate TLS upstream, so the client address and
-  // protocol only arrive via forwarded headers.
   app.set('trust proxy', 1);
 
-  // Swagger UI is the only HTML this API serves and it pulls its assets from a
-  // CDN, because swagger-ui-dist ships them as files on disk that do not exist
-  // inside a bundled serverless function.
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },
@@ -38,8 +31,6 @@ export const configureApp = (app: NestExpressApplication): void => {
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
-  // /s/:token is the address a founder actually sends to an investor, so it
-  // stays at the root rather than sitting behind the API prefix.
   app.setGlobalPrefix('api', {
     exclude: [{ path: 's/:token', method: RequestMethod.GET }],
   });
@@ -65,14 +56,6 @@ export const configureApp = (app: NestExpressApplication): void => {
       .build(),
   );
 
-  // SwaggerModule.setup is not used here. It serves swagger-ui-dist from disk,
-  // and those files do not exist inside a bundled serverless function, so the
-  // page renders unstyled and inert. Its customJs option appends tags after the
-  // init script rather than before it, which does not fix the ordering either.
-  // Serving the three files directly keeps the load order correct and lets the
-  // content security policy stay narrow.
-  // The adapter is generic over its own request and response types, which do
-  // not line up with the express ones the handlers below actually receive.
   const http = app.getHttpAdapter() as unknown as {
     get(path: string, handler: (req: unknown, res: Response) => unknown): void;
   };

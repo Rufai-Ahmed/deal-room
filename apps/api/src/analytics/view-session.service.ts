@@ -8,9 +8,6 @@ export interface ViewSession {
   shareLinkId: string;
 }
 
-/// Heartbeats arrive from an unauthenticated page, so the view they update is
-/// named by a signed token rather than a raw id. Without this any caller could
-/// inflate another investor's engagement figures.
 @Injectable()
 export class ViewSessionService {
   constructor(

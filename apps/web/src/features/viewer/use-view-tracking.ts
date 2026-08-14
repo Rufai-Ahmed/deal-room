@@ -4,8 +4,6 @@ import { useHeartbeatMutation } from '../../apis';
 const TICK_MS = 1000;
 const FLUSH_MS = 10_000;
 
-/// Dwell only accrues while the tab is actually visible, so a document left
-/// open in a background tab overnight does not report as ten hours of reading.
 export const useViewTracking = (viewSessionToken: string | null) => {
   const [heartbeat] = useHeartbeatMutation();
 
@@ -63,8 +61,6 @@ export const useViewTracking = (viewSessionToken: string | null) => {
       void heartbeat(payload());
     }, FLUSH_MS);
 
-    // A closing tab cannot wait for fetch to resolve, so the final reading is
-    // handed to the browser to deliver on its own.
     const onLeave = () => {
       if (!dirty.current) {
         return;

@@ -55,9 +55,6 @@ export const DocumentsPage = () => {
                         }`}
                       </p>
 
-                      {/* The columns to the right are too wide for a phone, so
-                          the same numbers collapse into one line instead of
-                          disappearing with them. */}
                       <p className="mt-1.5 text-[0.8125rem] text-ink-soft sm:hidden">
                         {document.totalViews === 0 ? (
                           'Not opened yet'
@@ -169,8 +166,6 @@ export const DocumentsPage = () => {
               ))}
             </ul>
           ) : activityLoading ? (
-            // Without this the empty state shows first, and a slow cold start
-            // makes a populated feed read as "nothing has happened yet".
             <div className="mt-4 space-y-3" aria-hidden="true">
               {[0, 1, 2].map((row) => (
                 <div key={row} className="border-l-2 border-rule pl-3.5">

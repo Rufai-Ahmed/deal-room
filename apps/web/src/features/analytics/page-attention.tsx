@@ -6,8 +6,6 @@ interface PageAttentionProps {
   pageCount: number | null;
 }
 
-/// Total dwell per page. Rendered as plain divs rather than a chart library so
-/// it stays legible at any width and carries no runtime cost.
 export const PageAttention = ({ pages, pageCount }: PageAttentionProps) => {
   if (pages.length === 0) {
     return (

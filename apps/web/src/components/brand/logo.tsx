@@ -2,9 +2,6 @@ interface LogoProps {
   className?: string;
 }
 
-/// A sheet with a turned corner, and a filled aperture where the reader's
-/// attention lands. The mark has to survive 16px in a browser tab, so it is
-/// built from four shapes and no gradients.
 export const LogoMark = ({ className }: LogoProps) => (
   <svg
     viewBox="0 0 32 32"

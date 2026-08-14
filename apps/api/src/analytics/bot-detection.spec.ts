@@ -11,8 +11,6 @@ describe('detectBot', () => {
     expect(detectBot(agent)).toEqual({ isBot: false, reason: null });
   });
 
-  // These are the ones that quietly inflate open counts: the founder pastes a
-  // link into a chat app and the platform fetches it to build a preview.
   const previewAgents: [string, string][] = [
     [
       'Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)',
