@@ -62,3 +62,6 @@ vitest.config.*.timestamp*
 
 # prisma client is generated from the schema at build time
 apps/api/src/generated/
+
+# serverless bundle is built at deploy time
+apps/api/dist-serverless/

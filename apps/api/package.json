@@ -79,6 +79,16 @@
         "options": {
           "passWithNoTests": true
         }
+      },
+      "build-serverless": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "webpack-cli build --config webpack.serverless.config.js",
+          "env": {
+            "NODE_ENV": "production"
+          },
+          "cwd": "apps/api"
+        }
       }
     }
   },
