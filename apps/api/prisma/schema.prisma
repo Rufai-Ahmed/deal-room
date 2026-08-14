@@ -72,6 +72,7 @@ model DocumentView {
   lastSeenAt  DateTime @default(now())
   durationMs  Int      @default(0)
   viewerEmail String?
+  viewerName  String?
   ipHash      String?
   userAgent   String?
   referrer    String?
