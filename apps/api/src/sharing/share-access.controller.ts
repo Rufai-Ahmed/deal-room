@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
-import { SharedDocumentView } from '@dealroom/shared';
-import { Request, Response } from 'express';
+import type { SharedDocumentView } from '@dealroom/shared';
+import type { Request, Response } from 'express';
 import { ViewSessionService } from '../analytics/view-session.service';
 import { ViewTrackingService } from '../analytics/view-tracking.service';
 import { AppConfig } from '../config/app-config';

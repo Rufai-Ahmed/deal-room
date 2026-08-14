@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { AuthSession, AuthUser } from '@dealroom/shared';
+import type { AuthSession, AuthUser } from '@dealroom/shared';
 import { hashPassword, verifyPassword } from '../common/password.util';
 import { AppConfig } from '../config/app-config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -100,11 +100,12 @@ export class AuthService {
     name: string;
     avatarUrl: string | null;
   }): AuthSession {
+    const jwtConfig = this.config.get('jwt', { infer: true });
     const token = this.jwt.sign(
       { sub: user.id, email: user.email },
       {
-        secret: this.config.get('jwt', { infer: true }).secret,
-        expiresIn: this.config.get('jwt', { infer: true }).expiresIn,
+        secret: jwtConfig.secret,
+        expiresIn: jwtConfig.expiresIn as `${number}${'d' | 'h' | 'm' | 's'}`,
       },
     );
 

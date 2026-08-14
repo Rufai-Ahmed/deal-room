@@ -10,8 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ShareLinkSummary } from '@dealroom/shared';
-import { CurrentUser, RequestUser } from '../common/current-user.decorator';
+import type { ShareLinkSummary } from '@dealroom/shared';
+import { CurrentUser, type RequestUser } from '../common/current-user.decorator';
 import { JwtAuthGuard } from '../common/jwt-auth.guard';
 import { CreateShareLinkDto, UpdateShareLinkDto } from './dto/share.dto';
 import { SharingService } from './sharing.service';

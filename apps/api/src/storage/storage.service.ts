@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
-import { StorageDriver, STORAGE_DRIVER, UploadTarget } from './storage.types';
+import { STORAGE_DRIVER, type StorageDriver, type UploadTarget } from './storage.types';
 
 @Injectable()
 export class StorageService {

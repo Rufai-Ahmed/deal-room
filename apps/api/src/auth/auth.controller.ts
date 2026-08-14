@@ -10,9 +10,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthSession, AuthUser } from '@dealroom/shared';
-import { Request, Response } from 'express';
-import { CurrentUser, RequestUser } from '../common/current-user.decorator';
+import type { AuthSession, AuthUser } from '@dealroom/shared';
+import type { Request, Response } from 'express';
+import { CurrentUser, type RequestUser } from '../common/current-user.decorator';
 import { JwtAuthGuard } from '../common/jwt-auth.guard';
 import { AppConfig } from '../config/app-config';
 import { AuthService } from './auth.service';

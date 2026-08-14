@@ -1,13 +1,31 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import App from './app/app';
+import { RouterProvider } from '@tanstack/react-router';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import { useMeQuery } from './apis';
+import { router } from './router';
+import { userLoaded } from './store/auth.slice';
+import { store, type RootState } from './store/store';
+import './styles.css';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement,
-);
+const SessionBootstrap = () => {
+  const token = useSelector((state: RootState) => state.auth.token);
+  const dispatch = useDispatch();
+  const { data } = useMeQuery(undefined, { skip: !token });
 
-root.render(
+  useEffect(() => {
+    if (data) {
+      dispatch(userLoaded(data));
+    }
+  }, [data, dispatch]);
+
+  return <RouterProvider router={router} />;
+};
+
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
-    <App />
+    <Provider store={store}>
+      <SessionBootstrap />
+    </Provider>
   </StrictMode>,
 );

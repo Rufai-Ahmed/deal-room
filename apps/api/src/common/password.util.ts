@@ -1,7 +1,16 @@
-import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
-import { promisify } from 'node:util';
+import { randomBytes, scrypt, timingSafeEqual, type ScryptOptions } from 'node:crypto';
 
-const scryptAsync = promisify(scrypt);
+const scryptAsync = (
+  password: string,
+  salt: Buffer,
+  keylen: number,
+  options: ScryptOptions,
+): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
+    scrypt(password, salt, keylen, options, (error, key) =>
+      error ? reject(error) : resolve(key),
+    );
+  });
 
 // Memory-hard parameters from RFC 7914. maxmem has to be raised explicitly
 // because 128 * N * r * p exceeds node's 32MB default.
@@ -17,7 +26,7 @@ const derive = (password: string, salt: Buffer): Promise<Buffer> =>
     r: BLOCK_SIZE,
     p: PARALLELISATION,
     maxmem: MAX_MEMORY,
-  }) as Promise<Buffer>;
+  });
 
 export const hashPassword = async (password: string): Promise<string> => {
   const salt = randomBytes(16);

@@ -8,8 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ActivityItem, DocumentAnalytics } from '@dealroom/shared';
-import { CurrentUser, RequestUser } from '../common/current-user.decorator';
+import type { ActivityItem, DocumentAnalytics } from '@dealroom/shared';
+import { CurrentUser, type RequestUser } from '../common/current-user.decorator';
 import { JwtAuthGuard } from '../common/jwt-auth.guard';
 import { AnalyticsService } from './analytics.service';
 import { HeartbeatDto } from './dto/analytics.dto';

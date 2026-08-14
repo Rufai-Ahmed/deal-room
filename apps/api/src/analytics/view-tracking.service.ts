@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PageEngagement } from '@dealroom/shared';
-import { Request } from 'express';
+import type { PageEngagement } from '@dealroom/shared';
+import type { Request } from 'express';
 import { UAParser } from 'ua-parser-js';
 import { hashIp } from '../common/crypto.util';
 import { AppConfig } from '../config/app-config';

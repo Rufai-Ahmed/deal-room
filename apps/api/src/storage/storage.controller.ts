@@ -12,7 +12,7 @@ import {
 import { ApiExcludeController } from '@nestjs/swagger';
 import { createReadStream } from 'node:fs';
 import { stat, writeFile } from 'node:fs/promises';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { LocalStorageDriver } from './local.driver';
 import { verifyLocalSignature } from './local-signature';
 import { STORAGE_DRIVER } from './storage.types';

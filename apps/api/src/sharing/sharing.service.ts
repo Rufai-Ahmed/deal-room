@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ShareLinkStatus, ShareLinkSummary } from '@dealroom/shared';
+import type { ShareLinkStatus, ShareLinkSummary } from '@dealroom/shared';
 import { generateShareToken } from '../common/crypto.util';
 import { AppConfig } from '../config/app-config';
 import { DocumentsService } from '../documents/documents.service';

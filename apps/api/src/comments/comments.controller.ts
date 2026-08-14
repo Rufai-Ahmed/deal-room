@@ -8,8 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CommentView } from '@dealroom/shared';
-import { CurrentUser, RequestUser } from '../common/current-user.decorator';
+import type { CommentView } from '@dealroom/shared';
+import { CurrentUser, type RequestUser } from '../common/current-user.decorator';
 import { JwtAuthGuard } from '../common/jwt-auth.guard';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto, PostViewerCommentDto } from './dto/comment.dto';

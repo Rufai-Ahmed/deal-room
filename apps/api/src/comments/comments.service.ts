@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CommentView } from '@dealroom/shared';
+import type { CommentView } from '@dealroom/shared';
 import { ViewSessionService } from '../analytics/view-session.service';
 import { AppConfig } from '../config/app-config';
 import { NotificationsService } from '../notifications/notifications.service';
