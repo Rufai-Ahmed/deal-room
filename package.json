@@ -2,7 +2,18 @@
   "name": "deal-room",
   "version": "0.1.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev": "nx run-many -t serve dev --projects=@dealroom/api,@dealroom/web",
+    "dev:api": "nx serve @dealroom/api",
+    "dev:web": "nx dev @dealroom/web",
+    "build": "nx run-many -t build --all",
+    "test": "nx run-many -t test --all",
+    "typecheck": "nx run-many -t typecheck --all",
+    "db:generate": "pnpm --filter @dealroom/api exec prisma generate",
+    "db:migrate": "pnpm --filter @dealroom/api exec prisma migrate dev",
+    "db:deploy": "pnpm --filter @dealroom/api exec prisma migrate deploy",
+    "db:seed": "pnpm --filter @dealroom/api exec tsx prisma/seed.ts"
+  },
   "private": true,
   "devDependencies": {
     "@nestjs/schematics": "^11.0.0",
