@@ -1,0 +1,158 @@
+import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { useActivityFeedQuery, useListDocumentsQuery } from '../apis';
+import { AppShell } from '../components/layout/app-shell';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { EmptyState } from '../components/ui/empty-state';
+import { Spinner } from '../components/ui/spinner';
+import { UploadDialog } from '../features/documents/upload-dialog';
+import { formatBytes, formatRelative } from '../lib/format';
+
+export const DocumentsPage = () => {
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const { data: documents, isLoading } = useListDocumentsQuery();
+  const { data: activity } = useActivityFeedQuery();
+
+  return (
+    <AppShell>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">Your documents</p>
+          <h1 className="mt-2 font-display text-4xl leading-none text-ink">
+            Deal room
+          </h1>
+        </div>
+        <Button onClick={() => setUploadOpen(true)}>Add document</Button>
+      </div>
+
+      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_19rem]">
+        <section>
+          {isLoading ? (
+            <div className="flex justify-center py-16 text-ink-faint">
+              <Spinner />
+            </div>
+          ) : documents?.length ? (
+            <ul className="divide-y divide-rule border-y border-rule">
+              {documents.map((document) => (
+                <li key={document.id}>
+                  <Link
+                    to="/documents/$documentId"
+                    params={{ documentId: document.id }}
+                    className="group flex items-center gap-5 py-5 transition-colors hover:bg-paper-sunk"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <h2 className="truncate font-display text-xl leading-snug text-ink">
+                        {document.name}
+                      </h2>
+                      <p className="mt-1 text-[0.8125rem] text-ink-faint">
+                        {formatBytes(document.sizeBytes)}
+                        {document.pageCount
+                          ? ` · ${document.pageCount} pages`
+                          : ''}
+                        {` · ${document.shareLinkCount} ${
+                          document.shareLinkCount === 1 ? 'link' : 'links'
+                        }`}
+                      </p>
+                    </div>
+
+                    <dl className="hidden shrink-0 gap-8 sm:flex">
+                      <div className="text-right">
+                        <dt className="eyebrow">Opens</dt>
+                        <dd className="numeric mt-1 text-lg text-ink">
+                          {document.totalViews}
+                        </dd>
+                      </div>
+                      <div className="text-right">
+                        <dt className="eyebrow">Viewers</dt>
+                        <dd className="numeric mt-1 text-lg text-ink">
+                          {document.uniqueViewers}
+                        </dd>
+                      </div>
+                      <div className="w-28 text-right">
+                        <dt className="eyebrow">Last opened</dt>
+                        <dd className="mt-1 text-[0.8125rem] text-ink-soft">
+                          {formatRelative(document.lastViewedAt)}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <span className="text-ink-faint transition-transform group-hover:translate-x-0.5">
+                      <svg
+                        viewBox="0 0 16 16"
+                        className="size-4"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="m6 3.5 4.5 4.5L6 12.5"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              title="Nothing shared yet"
+              body="Upload a deck or a data room document, then create a link for each investor you are talking to."
+              action={
+                <Button onClick={() => setUploadOpen(true)}>
+                  Add your first document
+                </Button>
+              }
+            />
+          )}
+        </section>
+
+        <aside>
+          <p className="eyebrow">Recent activity</p>
+          {activity?.length ? (
+            <ul className="mt-4 space-y-4">
+              {activity.slice(0, 12).map((item) => (
+                <li key={item.id} className="border-l-2 border-rule pl-3.5">
+                  <div className="flex items-center gap-2">
+                    <Badge tone={item.type === 'view' ? 'brand' : 'signal'}>
+                      {item.type === 'view' ? 'Opened' : 'Comment'}
+                    </Badge>
+                    <span className="text-[0.75rem] text-ink-faint">
+                      {formatRelative(item.occurredAt)}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[0.8125rem] leading-snug text-ink">
+                    <span className="font-medium">{item.viewerLabel}</span>
+                    {item.type === 'view' ? ' opened ' : ' commented on '}
+                    <Link
+                      to="/documents/$documentId"
+                      params={{ documentId: item.documentId }}
+                      className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink"
+                    >
+                      {item.documentName}
+                    </Link>
+                  </p>
+                  {item.detail ? (
+                    <p className="mt-1 text-[0.75rem] text-ink-faint">
+                      {item.detail}
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
+              Opens and comments will appear here as investors engage with your
+              documents.
+            </p>
+          )}
+        </aside>
+      </div>
+
+      <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
+    </AppShell>
+  );
+};

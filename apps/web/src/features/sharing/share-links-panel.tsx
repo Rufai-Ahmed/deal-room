@@ -1,0 +1,117 @@
+import { useState } from 'react';
+import type { ShareLinkStatus, ShareLinkSummary } from '@dealroom/shared';
+import {
+  useReplyToShareLinkMutation,
+  useRevokeShareLinkMutation,
+  useShareLinkCommentsQuery,
+} from '../../apis';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { CopyField } from '../../components/ui/copy-field';
+import { formatDuration, formatRelative } from '../../lib/format';
+import { CommentThread } from '../comments/comment-thread';
+
+const statusTone: Record<ShareLinkStatus, 'brand' | 'danger' | 'neutral'> = {
+  active: 'brand',
+  revoked: 'danger',
+  expired: 'neutral',
+};
+
+const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [revoke, { isLoading: revoking }] = useRevokeShareLinkMutation();
+  const [reply] = useReplyToShareLinkMutation();
+  const { data: comments } = useShareLinkCommentsQuery(link.id, {
+    skip: !expanded,
+  });
+
+  return (
+    <li className="py-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-display text-xl leading-none text-ink">
+              {link.recipientName ?? 'Unnamed link'}
+            </h3>
+            <Badge tone={statusTone[link.status]}>{link.status}</Badge>
+            {link.requireEmail ? <Badge>Email required</Badge> : null}
+            {link.allowDownload ? <Badge>Download allowed</Badge> : null}
+          </div>
+          <p className="mt-1.5 text-[0.8125rem] text-ink-faint">
+            {link.recipientEmail ?? 'No email on file'}
+            {link.expiresAt
+              ? ` · expires ${new Date(link.expiresAt).toLocaleDateString()}`
+              : ''}
+          </p>
+        </div>
+
+        <dl className="flex shrink-0 gap-7">
+          <div className="text-right">
+            <dt className="eyebrow">Opens</dt>
+            <dd className="numeric mt-1 text-lg text-ink">{link.totalViews}</dd>
+          </div>
+          <div className="text-right">
+            <dt className="eyebrow">Time</dt>
+            <dd className="numeric mt-1 text-lg text-ink">
+              {link.totalDurationMs > 0
+                ? formatDuration(link.totalDurationMs)
+                : '—'}
+            </dd>
+          </div>
+          <div className="w-24 text-right">
+            <dt className="eyebrow">Last open</dt>
+            <dd className="mt-1 text-[0.8125rem] text-ink-soft">
+              {formatRelative(link.lastViewedAt)}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div className="mt-4">
+        <CopyField value={link.url} />
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpanded((current) => !current)}
+        >
+          {expanded ? 'Hide' : 'Show'} comments
+          {link.commentCount > 0 ? ` (${link.commentCount})` : ''}
+        </Button>
+        {link.status === 'active' ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={revoking}
+            onClick={() => revoke(link.id)}
+          >
+            Revoke
+          </Button>
+        ) : null}
+      </div>
+
+      {expanded ? (
+        <div className="mt-4 border-t border-rule pt-4">
+          <CommentThread
+            comments={comments ?? []}
+            placeholder={`Reply to ${link.recipientName ?? 'this investor'}`}
+            emptyMessage="No comments on this link yet. Anything the investor asks will land here."
+            onSubmit={(body) =>
+              reply({ shareLinkId: link.id, body }).unwrap()
+            }
+          />
+        </div>
+      ) : null}
+    </li>
+  );
+};
+
+export const ShareLinksPanel = ({ links }: { links: ShareLinkSummary[] }) => (
+  <ul className="divide-y divide-rule border-y border-rule">
+    {links.map((link) => (
+      <ShareLinkRow key={link.id} link={link} />
+    ))}
+  </ul>
+);
