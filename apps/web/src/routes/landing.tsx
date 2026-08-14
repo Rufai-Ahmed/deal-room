@@ -82,7 +82,17 @@ export const LandingPage = () => (
     <footer className="border-t border-rule">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-8 text-[0.8125rem] text-ink-faint sm:flex-row sm:items-center sm:justify-between">
         <p>Deal Room</p>
-        <p>Built by Rufai Ahmed</p>
+        <p>
+          Built by{' '}
+          <a
+            href="https://rufaiahmed.com"
+            target="_blank"
+            rel="noreferrer"
+            className="text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
+          >
+            Rufai Ahmed
+          </a>
+        </p>
       </div>
     </footer>
   </div>
