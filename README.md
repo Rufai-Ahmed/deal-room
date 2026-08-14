@@ -163,54 +163,15 @@ Tests cover the places where a defect is silent rather than loud:
 
 CI typechecks, tests and builds every project on push.
 
-## Security and privacy
-
-- Passwords use scrypt with per-password salts and constant-time comparison.
-- Share tokens are 128 bits of randomness, never sequential ids.
-- File URLs are signed and short lived. Storage is never publicly enumerable.
-- The file URL is withheld from the API response until the email gate is
-  satisfied, so it cannot be lifted from an unidentified response.
-- Viewer IPs are stored only as salted hashes. Unique-viewer counts still work
-  without retaining a personal identifier.
-- `/s/*` and `/view/*` send `X-Robots-Tag: noindex, nofollow` and are disallowed
-  in robots.txt. An investor's deck surfacing in a search index would be a
-  serious failure, so the marketing page is the only indexable surface.
-- Rate limiting is applied globally and validation rejects unknown fields.
-
-## Assumptions and limits
-
-Stated plainly, because most of these are deliberate rather than missing:
+## Assumptions
 
 - **A share link is a bearer credential.** Anyone holding the URL can open the
   document, subject to expiry and revocation. The email gate attributes a view,
   it does not authenticate.
-- **View-only is a deterrent, not DRM.** With downloads disabled the file is
-  served inline and no download control is offered, but a determined viewer can
-  still capture the content.
-- **Dwell time is best effort.** It accrues only while the tab is visible, is
-  clamped to the wall clock since the view opened, and can never be reduced by a
-  later heartbeat. A strong signal, not an audit record.
-- **Single tenant per user.** No organisations or shared workspaces.
-- **Documents are soft deleted.** Archiving hides a document and kills its
-  links, because destroying a fundraising audit trail on one click is the wrong
-  default.
-- Non-PDF files are stored and shared but not previewed inline, the activity
-  feed is not paginated, and analytics aggregate in the application rather than
-  in SQL. All fine at this size, all wrong at scale.
-
-## What I would do next
-
-1. **Per-investor authentication** for genuinely sensitive rooms, probably a
-   one-time code to the recipient address rather than a password.
-2. **Document versioning.** Replace a deck and keep the links working, with
-   engagement attributed per version. Founders re-cut decks constantly.
-3. **A digest instead of a notification per open**, which will get noisy during
-   an active raise.
-4. **Passwordless sign-in.** I deliberately did not ship magic links, because
-   putting email deliverability on the critical login path is a bad trade for an
-   app that has to work first time. With a warm sending domain it is the better
-   default.
-5. **Watermarking** the viewer's email into rendered pages, raising the cost of
-   forwarding without pretending to be DRM.
-6. **Engagement scoring** across a raise, ranking investors by depth of
-   attention rather than raw opens.
+- **View-only is a deterrent, not DRM.** A determined viewer can still capture
+  what they can see.
+- **Dwell time is best effort.** It accrues only while the tab is visible and is
+  clamped to the wall clock since the view opened. A strong signal, not an audit
+  record.
+- **One founder per account**, and documents are archived rather than destroyed,
+  because deleting a fundraising audit trail on one click is the wrong default.
