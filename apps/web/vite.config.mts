@@ -13,10 +13,11 @@ export default defineConfig(() => ({
     port: 4200,
     host: 'localhost',
     // Keeps the browser on a single origin in development, matching the
-    // rewrite that fronts the API in production.
+    // rewrite that fronts the API in production. Both keys are anchored
+    // regexes: a bare '/s' prefix would also swallow /src and /styles.css.
     proxy: {
-      '/api': { target: API_TARGET, changeOrigin: true },
-      '/s': { target: API_TARGET, changeOrigin: true },
+      '^/api/.*': { target: API_TARGET, changeOrigin: true },
+      '^/s/[^/]+$': { target: API_TARGET, changeOrigin: true },
     },
   },
   preview: {
