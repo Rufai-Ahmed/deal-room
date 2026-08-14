@@ -54,6 +54,31 @@ export const DocumentsPage = () => {
                           document.shareLinkCount === 1 ? 'link' : 'links'
                         }`}
                       </p>
+
+                      {/* The columns to the right are too wide for a phone, so
+                          the same numbers collapse into one line instead of
+                          disappearing with them. */}
+                      <p className="mt-1.5 text-[0.8125rem] text-ink-soft sm:hidden">
+                        {document.totalViews === 0 ? (
+                          'Not opened yet'
+                        ) : (
+                          <>
+                            <span className="numeric text-ink">
+                              {document.totalViews}
+                            </span>
+                            {document.totalViews === 1 ? ' open' : ' opens'}
+                            {' · '}
+                            <span className="numeric text-ink">
+                              {document.uniqueViewers}
+                            </span>
+                            {document.uniqueViewers === 1
+                              ? ' viewer'
+                              : ' viewers'}
+                            {' · '}
+                            {formatRelative(document.lastViewedAt)}
+                          </>
+                        )}
+                      </p>
                     </div>
 
                     <dl className="hidden shrink-0 gap-8 sm:flex">
