@@ -181,3 +181,8 @@ CI typechecks, tests and builds every project on push.
 - **Long lists load a batch at a time,** and the summary figures are counted by
   the database rather than by the app, so a document with thousands of opens
   loads as quickly as one with ten.
+- **Some things are deliberately not built,** because the brief is upload, share
+  and track: there is no settings page to change your name, email or password,
+  comments cannot be edited or deleted once posted, a removed document cannot be
+  restored from the interface, and signing in with Google means you sign in with
+  Google from then on.
