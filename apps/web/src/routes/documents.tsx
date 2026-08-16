@@ -39,11 +39,14 @@ export const DocumentsPage = () => {
             <>
               <ul className="divide-y divide-rule border-y border-rule">
                 {documents.items.map((document) => (
-                  <li key={document.id}>
+                  <li
+                    key={document.id}
+                    className="group flex items-center gap-3 transition-colors hover:bg-paper-sunk"
+                  >
                     <Link
                       to="/documents/$documentId"
                       params={{ documentId: document.id }}
-                      className="group flex items-center gap-5 py-5 transition-colors hover:bg-paper-sunk"
+                      className="flex min-w-0 flex-1 items-center gap-5 py-5"
                     >
                       <div className="min-w-0 flex-1">
                         <h2 className="truncate font-display text-xl leading-snug text-ink">
@@ -103,16 +106,6 @@ export const DocumentsPage = () => {
                         </div>
                       </dl>
 
-                      <span
-                        className="shrink-0"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                        }}
-                      >
-                        <DocumentActions document={document} />
-                      </span>
-
                       <span className="text-ink-faint transition-transform group-hover:translate-x-0.5">
                         <svg
                           viewBox="0 0 16 16"
@@ -130,6 +123,8 @@ export const DocumentsPage = () => {
                         </svg>
                       </span>
                     </Link>
+
+                    <DocumentActions document={document} />
                   </li>
                 ))}
               </ul>
