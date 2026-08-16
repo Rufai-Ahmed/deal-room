@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams } from '@tanstack/react-router';
+import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import {
   useDocumentAnalyticsQuery,
   useDocumentViewsQuery,
@@ -14,6 +14,7 @@ import { Spinner } from '../components/ui/spinner';
 import { Stat } from '../components/ui/stat';
 import { PageAttention } from '../features/analytics/page-attention';
 import { ViewTimeline } from '../features/analytics/view-timeline';
+import { DocumentActions } from '../features/documents/document-actions';
 import { CreateShareDialog } from '../features/sharing/create-share-dialog';
 import { ShareLinksPanel } from '../features/sharing/share-links-panel';
 import { formatDuration, formatRelative } from '../lib/format';
@@ -34,6 +35,7 @@ const Section = ({
 
 export const DocumentDetailPage = () => {
   const { documentId } = useParams({ from: '/documents/$documentId' });
+  const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
   const [showBots, setShowBots] = useState(false);
 
@@ -67,7 +69,15 @@ export const DocumentDetailPage = () => {
             {document?.shareLinkCount === 1 ? 'link' : 'links'}
           </p>
         </div>
-        <Button onClick={() => setShareOpen(true)}>Create share link</Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setShareOpen(true)}>Create share link</Button>
+          {document ? (
+            <DocumentActions
+              document={document}
+              onRemoved={() => navigate({ to: '/documents' })}
+            />
+          ) : null}
+        </div>
       </div>
 
       {analyticsLoading ? (

@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { EmptyState } from '../components/ui/empty-state';
 import { LoadMore } from '../components/ui/load-more';
 import { Spinner } from '../components/ui/spinner';
+import { DocumentActions } from '../features/documents/document-actions';
 import { UploadDialog } from '../features/documents/upload-dialog';
 import { formatBytes, formatRelative } from '../lib/format';
 import { useCursorList } from '../lib/use-cursor-list';
@@ -101,6 +102,16 @@ export const DocumentsPage = () => {
                           </dd>
                         </div>
                       </dl>
+
+                      <span
+                        className="shrink-0"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                        }}
+                      >
+                        <DocumentActions document={document} />
+                      </span>
 
                       <span className="text-ink-faint transition-transform group-hover:translate-x-0.5">
                         <svg

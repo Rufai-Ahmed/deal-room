@@ -7,10 +7,12 @@ import {
 } from '../../apis';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
+import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { CopyField } from '../../components/ui/copy-field';
 import { formatDuration, formatRelative } from '../../lib/format';
 import { useCursorList } from '../../lib/use-cursor-list';
 import { CommentThread } from '../comments/comment-thread';
+import { EditShareDialog } from './edit-share-dialog';
 
 const statusTone: Record<ShareLinkStatus, 'brand' | 'danger' | 'neutral'> = {
   active: 'brand',
@@ -20,6 +22,8 @@ const statusTone: Record<ShareLinkStatus, 'brand' | 'danger' | 'neutral'> = {
 
 const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [confirmRevoke, setRevoking] = useState(false);
   const [revoke, { isLoading: revoking }] = useRevokeShareLinkMutation();
   const [reply] = useReplyToShareLinkMutation();
   const comments = useCursorList(
@@ -84,16 +88,32 @@ const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
           {link.commentCount > 0 ? ` (${link.commentCount})` : ''}
         </Button>
         {link.status === 'active' ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={revoking}
-            onClick={() => revoke(link.id)}
-          >
-            Revoke
-          </Button>
+          <>
+            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={revoking}
+              onClick={() => setRevoking(true)}
+            >
+              Revoke
+            </Button>
+          </>
         ) : null}
       </div>
+
+      <EditShareDialog link={link} open={editing} onOpenChange={setEditing} />
+
+      <ConfirmDialog
+        open={confirmRevoke}
+        onOpenChange={setRevoking}
+        title={`Revoke the link for ${link.recipientName ?? 'this investor'}?`}
+        description="The link stops working immediately and they will see a closed-link message. Engagement already recorded is kept."
+        confirmLabel="Revoke link"
+        onConfirm={() => revoke(link.id).unwrap()}
+      />
 
       {expanded ? (
         <div className="mt-4 border-t border-rule pt-4">
