@@ -18,7 +18,6 @@ describe('paginate', () => {
     expect(page.nextCursor).toBeNull();
   });
 
-  // Callers fetch limit + 1 so the extra row is what proves another page exists.
   it('drops the probe row and points the cursor at the last kept row', () => {
     const page = paginate(rows(6), 5, (row) => row.id);
 

@@ -12,9 +12,6 @@ export default defineConfig(() => ({
   server: {
     port: 4200,
     host: 'localhost',
-    // Keeps the browser on a single origin in development, matching the
-    // rewrite that fronts the API in production. Both keys are anchored
-    // regexes: a bare '/s' prefix would also swallow /src and /styles.css.
     proxy: {
       '^/api/.*': { target: API_TARGET, changeOrigin: true },
       '^/s/[^/]+$': { target: API_TARGET, changeOrigin: true },
@@ -51,9 +48,9 @@ export default defineConfig(() => ({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-        // A cached document response would leak a revoked deck and a cached API
-        // response would show a founder stale engagement. Both stay network-only.
+        navigateFallback: null,
+        cleanupOutdatedCaches: true,
+        globPatterns: ['**/*.{js,css,svg,woff2}'],
         navigateFallbackDenylist: [/^\/api/, /^\/s\//, /^\/view\//],
         runtimeCaching: [
           {
