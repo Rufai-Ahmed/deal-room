@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import type { ViewEvent } from '@dealroom/shared';
 import { Badge } from '../../components/ui/badge';
+import { LoadMore } from '../../components/ui/load-more';
+import { Spinner } from '../../components/ui/spinner';
 import { formatDuration, formatExact } from '../../lib/format';
 
 const viewerLabel = (view: ViewEvent): string =>
@@ -10,14 +11,36 @@ const context = (view: ViewEvent): string =>
   [view.browser, view.os, view.country].filter(Boolean).join(' · ') ||
   'Unknown device';
 
-export const ViewTimeline = ({ views }: { views: ViewEvent[] }) => {
-  const [showBots, setShowBots] = useState(false);
+interface ViewTimelineProps {
+  views: ViewEvent[];
+  botHits: number;
+  showBots: boolean;
+  onShowBotsChange: (value: boolean) => void;
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
+}
 
-  const humans = views.filter((view) => !view.isBot);
-  const bots = views.filter((view) => view.isBot);
-  const visible = showBots ? views : humans;
+export const ViewTimeline = ({
+  views,
+  botHits,
+  showBots,
+  onShowBotsChange,
+  isLoading,
+  isLoadingMore,
+  hasMore,
+  onLoadMore,
+}: ViewTimelineProps) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-10 text-ink-faint">
+        <Spinner />
+      </div>
+    );
+  }
 
-  if (humans.length === 0 && bots.length === 0) {
+  if (views.length === 0 && botHits === 0) {
     return (
       <p className="text-[0.8125rem] leading-relaxed text-ink-faint">
         No opens recorded yet.
@@ -27,21 +50,21 @@ export const ViewTimeline = ({ views }: { views: ViewEvent[] }) => {
 
   return (
     <div>
-      {bots.length > 0 ? (
+      {botHits > 0 ? (
         <label className="mb-4 flex cursor-pointer items-center gap-2.5 text-[0.8125rem] text-ink-soft">
           <input
             type="checkbox"
             checked={showBots}
-            onChange={(event) => setShowBots(event.target.checked)}
+            onChange={(event) => onShowBotsChange(event.target.checked)}
             className="size-4 accent-[var(--color-brand)]"
           />
-          Show {bots.length} automated {bots.length === 1 ? 'hit' : 'hits'}{' '}
-          excluded from the counts
+          Show {botHits} automated {botHits === 1 ? 'hit' : 'hits'} excluded from
+          the counts
         </label>
       ) : null}
 
       <ol className="space-y-4">
-        {visible.map((view) => (
+        {views.map((view) => (
           <li
             key={view.id}
             className="grid gap-1 border-l-2 border-rule pl-4 sm:grid-cols-[1fr_auto]"
@@ -76,6 +99,13 @@ export const ViewTimeline = ({ views }: { views: ViewEvent[] }) => {
           </li>
         ))}
       </ol>
+
+      <LoadMore
+        hasMore={hasMore}
+        isLoading={isLoadingMore}
+        onClick={onLoadMore}
+        label="Load older opens"
+      />
     </div>
   );
 };

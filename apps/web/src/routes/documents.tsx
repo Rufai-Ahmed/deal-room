@@ -5,14 +5,16 @@ import { AppShell } from '../components/layout/app-shell';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { EmptyState } from '../components/ui/empty-state';
+import { LoadMore } from '../components/ui/load-more';
 import { Spinner } from '../components/ui/spinner';
 import { UploadDialog } from '../features/documents/upload-dialog';
 import { formatBytes, formatRelative } from '../lib/format';
+import { useCursorList } from '../lib/use-cursor-list';
 
 export const DocumentsPage = () => {
   const [uploadOpen, setUploadOpen] = useState(false);
-  const { data: documents, isLoading } = useListDocumentsQuery();
-  const { data: activity, isLoading: activityLoading } = useActivityFeedQuery();
+  const documents = useCursorList(useListDocumentsQuery, {});
+  const activity = useCursorList(useActivityFeedQuery, { limit: 12 });
 
   return (
     <AppShell>
@@ -28,97 +30,105 @@ export const DocumentsPage = () => {
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_19rem]">
         <section>
-          {isLoading ? (
+          {documents.isLoading ? (
             <div className="flex justify-center py-16 text-ink-faint">
               <Spinner />
             </div>
-          ) : documents?.length ? (
-            <ul className="divide-y divide-rule border-y border-rule">
-              {documents.map((document) => (
-                <li key={document.id}>
-                  <Link
-                    to="/documents/$documentId"
-                    params={{ documentId: document.id }}
-                    className="group flex items-center gap-5 py-5 transition-colors hover:bg-paper-sunk"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <h2 className="truncate font-display text-xl leading-snug text-ink">
-                        {document.name}
-                      </h2>
-                      <p className="mt-1 text-[0.8125rem] text-ink-faint">
-                        {formatBytes(document.sizeBytes)}
-                        {document.pageCount
-                          ? ` · ${document.pageCount} pages`
-                          : ''}
-                        {` · ${document.shareLinkCount} ${
-                          document.shareLinkCount === 1 ? 'link' : 'links'
-                        }`}
-                      </p>
+          ) : documents.items.length ? (
+            <>
+              <ul className="divide-y divide-rule border-y border-rule">
+                {documents.items.map((document) => (
+                  <li key={document.id}>
+                    <Link
+                      to="/documents/$documentId"
+                      params={{ documentId: document.id }}
+                      className="group flex items-center gap-5 py-5 transition-colors hover:bg-paper-sunk"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <h2 className="truncate font-display text-xl leading-snug text-ink">
+                          {document.name}
+                        </h2>
+                        <p className="mt-1 text-[0.8125rem] text-ink-faint">
+                          {formatBytes(document.sizeBytes)}
+                          {document.pageCount
+                            ? ` · ${document.pageCount} pages`
+                            : ''}
+                          {` · ${document.shareLinkCount} ${
+                            document.shareLinkCount === 1 ? 'link' : 'links'
+                          }`}
+                        </p>
 
-                      <p className="mt-1.5 text-[0.8125rem] text-ink-soft sm:hidden">
-                        {document.totalViews === 0 ? (
-                          'Not opened yet'
-                        ) : (
-                          <>
-                            <span className="numeric text-ink">
-                              {document.totalViews}
-                            </span>
-                            {document.totalViews === 1 ? ' open' : ' opens'}
-                            {' · '}
-                            <span className="numeric text-ink">
-                              {document.uniqueViewers}
-                            </span>
-                            {document.uniqueViewers === 1
-                              ? ' viewer'
-                              : ' viewers'}
-                            {' · '}
+                        <p className="mt-1.5 text-[0.8125rem] text-ink-soft sm:hidden">
+                          {document.totalViews === 0 ? (
+                            'Not opened yet'
+                          ) : (
+                            <>
+                              <span className="numeric text-ink">
+                                {document.totalViews}
+                              </span>
+                              {document.totalViews === 1 ? ' open' : ' opens'}
+                              {' · '}
+                              <span className="numeric text-ink">
+                                {document.uniqueViewers}
+                              </span>
+                              {document.uniqueViewers === 1
+                                ? ' viewer'
+                                : ' viewers'}
+                              {' · '}
+                              {formatRelative(document.lastViewedAt)}
+                            </>
+                          )}
+                        </p>
+                      </div>
+
+                      <dl className="hidden shrink-0 gap-8 sm:flex">
+                        <div className="text-right">
+                          <dt className="eyebrow">Opens</dt>
+                          <dd className="numeric mt-1 text-lg text-ink">
+                            {document.totalViews}
+                          </dd>
+                        </div>
+                        <div className="text-right">
+                          <dt className="eyebrow">Viewers</dt>
+                          <dd className="numeric mt-1 text-lg text-ink">
+                            {document.uniqueViewers}
+                          </dd>
+                        </div>
+                        <div className="w-28 text-right">
+                          <dt className="eyebrow">Last opened</dt>
+                          <dd className="mt-1 text-[0.8125rem] text-ink-soft">
                             {formatRelative(document.lastViewedAt)}
-                          </>
-                        )}
-                      </p>
-                    </div>
+                          </dd>
+                        </div>
+                      </dl>
 
-                    <dl className="hidden shrink-0 gap-8 sm:flex">
-                      <div className="text-right">
-                        <dt className="eyebrow">Opens</dt>
-                        <dd className="numeric mt-1 text-lg text-ink">
-                          {document.totalViews}
-                        </dd>
-                      </div>
-                      <div className="text-right">
-                        <dt className="eyebrow">Viewers</dt>
-                        <dd className="numeric mt-1 text-lg text-ink">
-                          {document.uniqueViewers}
-                        </dd>
-                      </div>
-                      <div className="w-28 text-right">
-                        <dt className="eyebrow">Last opened</dt>
-                        <dd className="mt-1 text-[0.8125rem] text-ink-soft">
-                          {formatRelative(document.lastViewedAt)}
-                        </dd>
-                      </div>
-                    </dl>
-
-                    <span className="text-ink-faint transition-transform group-hover:translate-x-0.5">
-                      <svg
-                        viewBox="0 0 16 16"
-                        className="size-4"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="m6 3.5 4.5 4.5L6 12.5"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                      <span className="text-ink-faint transition-transform group-hover:translate-x-0.5">
+                        <svg
+                          viewBox="0 0 16 16"
+                          className="size-4"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="m6 3.5 4.5 4.5L6 12.5"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <LoadMore
+                hasMore={documents.hasMore}
+                isLoading={documents.isLoadingMore}
+                onClick={documents.loadMore}
+                label="Load more documents"
+              />
+            </>
           ) : (
             <EmptyState
               title="Nothing shared yet"
@@ -134,38 +144,46 @@ export const DocumentsPage = () => {
 
         <aside>
           <p className="eyebrow">Recent activity</p>
-          {activity?.length ? (
-            <ul className="mt-4 space-y-4">
-              {activity.slice(0, 12).map((item) => (
-                <li key={item.id} className="border-l-2 border-rule pl-3.5">
-                  <div className="flex items-center gap-2">
-                    <Badge tone={item.type === 'view' ? 'brand' : 'signal'}>
-                      {item.type === 'view' ? 'Opened' : 'Comment'}
-                    </Badge>
-                    <span className="text-[0.75rem] text-ink-faint">
-                      {formatRelative(item.occurredAt)}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-[0.8125rem] leading-snug text-ink">
-                    <span className="font-medium">{item.viewerLabel}</span>
-                    {item.type === 'view' ? ' opened ' : ' commented on '}
-                    <Link
-                      to="/documents/$documentId"
-                      params={{ documentId: item.documentId }}
-                      className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink"
-                    >
-                      {item.documentName}
-                    </Link>
-                  </p>
-                  {item.detail ? (
-                    <p className="mt-1 text-[0.75rem] text-ink-faint">
-                      {item.detail}
+          {activity.items.length ? (
+            <>
+              <ul className="mt-4 space-y-4">
+                {activity.items.map((item) => (
+                  <li key={item.id} className="border-l-2 border-rule pl-3.5">
+                    <div className="flex items-center gap-2">
+                      <Badge tone={item.type === 'view' ? 'brand' : 'signal'}>
+                        {item.type === 'view' ? 'Opened' : 'Comment'}
+                      </Badge>
+                      <span className="text-[0.75rem] text-ink-faint">
+                        {formatRelative(item.occurredAt)}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-[0.8125rem] leading-snug text-ink">
+                      <span className="font-medium">{item.viewerLabel}</span>
+                      {item.type === 'view' ? ' opened ' : ' commented on '}
+                      <Link
+                        to="/documents/$documentId"
+                        params={{ documentId: item.documentId }}
+                        className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink"
+                      >
+                        {item.documentName}
+                      </Link>
                     </p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          ) : activityLoading ? (
+                    {item.detail ? (
+                      <p className="mt-1 text-[0.75rem] text-ink-faint">
+                        {item.detail}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+              <LoadMore
+                hasMore={activity.hasMore}
+                isLoading={activity.isLoadingMore}
+                onClick={activity.loadMore}
+                label="Load earlier activity"
+              />
+            </>
+          ) : activity.isLoading ? (
             <div className="mt-4 space-y-3" aria-hidden="true">
               {[0, 1, 2].map((row) => (
                 <div key={row} className="border-l-2 border-rule pl-3.5">

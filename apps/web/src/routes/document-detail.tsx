@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
 import {
   useDocumentAnalyticsQuery,
-  useListDocumentsQuery,
+  useDocumentViewsQuery,
+  useGetDocumentQuery,
   useListShareLinksQuery,
 } from '../apis';
 import { AppShell } from '../components/layout/app-shell';
 import { Button } from '../components/ui/button';
 import { EmptyState } from '../components/ui/empty-state';
+import { LoadMore } from '../components/ui/load-more';
 import { Spinner } from '../components/ui/spinner';
 import { Stat } from '../components/ui/stat';
 import { PageAttention } from '../features/analytics/page-attention';
@@ -15,21 +17,17 @@ import { ViewTimeline } from '../features/analytics/view-timeline';
 import { CreateShareDialog } from '../features/sharing/create-share-dialog';
 import { ShareLinksPanel } from '../features/sharing/share-links-panel';
 import { formatDuration, formatRelative } from '../lib/format';
+import { useCursorList } from '../lib/use-cursor-list';
 
 const Section = ({
   title,
-  aside,
   children,
 }: {
   title: string;
-  aside?: React.ReactNode;
   children: React.ReactNode;
 }) => (
   <section className="mt-12">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="eyebrow">{title}</h2>
-      {aside}
-    </div>
+    <h2 className="eyebrow">{title}</h2>
     <div className="mt-4">{children}</div>
   </section>
 );
@@ -37,14 +35,17 @@ const Section = ({
 export const DocumentDetailPage = () => {
   const { documentId } = useParams({ from: '/documents/$documentId' });
   const [shareOpen, setShareOpen] = useState(false);
+  const [showBots, setShowBots] = useState(false);
 
-  const { data: documents } = useListDocumentsQuery();
-  const { data: links, isLoading: linksLoading } =
-    useListShareLinksQuery(documentId);
+  const { data: document } = useGetDocumentQuery(documentId);
   const { data: analytics, isLoading: analyticsLoading } =
     useDocumentAnalyticsQuery(documentId);
 
-  const document = documents?.find((item) => item.id === documentId);
+  const links = useCursorList(useListShareLinksQuery, { documentId });
+  const views = useCursorList(useDocumentViewsQuery, {
+    documentId,
+    includeBots: showBots,
+  });
 
   return (
     <AppShell>
@@ -62,8 +63,8 @@ export const DocumentDetailPage = () => {
           </h1>
           <p className="mt-1.5 text-[0.8125rem] text-ink-faint">
             {document?.pageCount ? `${document.pageCount} pages · ` : ''}
-            {links?.length ?? 0} share{' '}
-            {(links?.length ?? 0) === 1 ? 'link' : 'links'}
+            {document?.shareLinkCount ?? 0} share{' '}
+            {document?.shareLinkCount === 1 ? 'link' : 'links'}
           </p>
         </div>
         <Button onClick={() => setShareOpen(true)}>Create share link</Button>
@@ -112,12 +113,20 @@ export const DocumentDetailPage = () => {
       ) : null}
 
       <Section title="Share links">
-        {linksLoading ? (
+        {links.isLoading ? (
           <div className="flex justify-center py-10 text-ink-faint">
             <Spinner />
           </div>
-        ) : links?.length ? (
-          <ShareLinksPanel links={links} />
+        ) : links.items.length ? (
+          <>
+            <ShareLinksPanel links={links.items} />
+            <LoadMore
+              hasMore={links.hasMore}
+              isLoading={links.isLoadingMore}
+              onClick={links.loadMore}
+              label="Load more links"
+            />
+          </>
         ) : (
           <EmptyState
             title="No links yet"
@@ -140,7 +149,16 @@ export const DocumentDetailPage = () => {
         </Section>
 
         <Section title="Every open">
-          <ViewTimeline views={analytics?.views ?? []} />
+          <ViewTimeline
+            views={views.items}
+            botHits={analytics?.botHits ?? 0}
+            showBots={showBots}
+            onShowBotsChange={setShowBots}
+            isLoading={views.isLoading}
+            isLoadingMore={views.isLoadingMore}
+            hasMore={views.hasMore}
+            onLoadMore={views.loadMore}
+          />
         </Section>
       </div>
 

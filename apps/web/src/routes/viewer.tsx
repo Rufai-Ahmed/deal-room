@@ -14,6 +14,7 @@ import { Spinner } from '../components/ui/spinner';
 import { CommentThread } from '../features/comments/comment-thread';
 import { PdfDocument } from '../features/viewer/pdf-document';
 import { useViewTracking } from '../features/viewer/use-view-tracking';
+import { useCursorList } from '../lib/use-cursor-list';
 
 const readSessionFromHash = (): string | null => {
   const token = new URLSearchParams(
@@ -56,7 +57,8 @@ export const ViewerPage = () => {
     data?.identified ? activeSession : null,
   );
 
-  const { data: comments } = useViewerCommentsQuery(
+  const comments = useCursorList(
+    useViewerCommentsQuery,
     { token, viewSessionToken: activeSession },
     { skip: !data?.identified || !activeSession },
   );
@@ -154,7 +156,10 @@ export const ViewerPage = () => {
           <h2 className="eyebrow">Questions for {data.ownerName}</h2>
           <div className="mt-4">
             <CommentThread
-              comments={comments ?? []}
+              comments={comments.items}
+              hasMore={comments.hasMore}
+              isLoadingMore={comments.isLoadingMore}
+              onLoadMore={comments.loadMore}
               placeholder="Ask a question about this document"
               emptyMessage="Leave a question and it goes straight to the founder."
               onSubmit={(body) =>

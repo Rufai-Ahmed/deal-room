@@ -9,6 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { CopyField } from '../../components/ui/copy-field';
 import { formatDuration, formatRelative } from '../../lib/format';
+import { useCursorList } from '../../lib/use-cursor-list';
 import { CommentThread } from '../comments/comment-thread';
 
 const statusTone: Record<ShareLinkStatus, 'brand' | 'danger' | 'neutral'> = {
@@ -21,9 +22,11 @@ const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
   const [expanded, setExpanded] = useState(false);
   const [revoke, { isLoading: revoking }] = useRevokeShareLinkMutation();
   const [reply] = useReplyToShareLinkMutation();
-  const { data: comments } = useShareLinkCommentsQuery(link.id, {
-    skip: !expanded,
-  });
+  const comments = useCursorList(
+    useShareLinkCommentsQuery,
+    { shareLinkId: link.id },
+    { skip: !expanded },
+  );
 
   return (
     <li className="py-5">
@@ -95,7 +98,10 @@ const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
       {expanded ? (
         <div className="mt-4 border-t border-rule pt-4">
           <CommentThread
-            comments={comments ?? []}
+            comments={comments.items}
+            hasMore={comments.hasMore}
+            isLoadingMore={comments.isLoadingMore}
+            onLoadMore={comments.loadMore}
             placeholder={`Reply to ${link.recipientName ?? 'this investor'}`}
             emptyMessage="No comments on this link yet. Anything the investor asks will land here."
             onSubmit={(body) =>

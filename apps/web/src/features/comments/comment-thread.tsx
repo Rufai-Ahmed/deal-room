@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import type { CommentView } from '@dealroom/shared';
 import { Button } from '../../components/ui/button';
+import { LoadMore } from '../../components/ui/load-more';
 import { Spinner } from '../../components/ui/spinner';
 import { formatRelative } from '../../lib/format';
 
@@ -10,6 +11,9 @@ interface CommentThreadProps {
   placeholder: string;
   emptyMessage: string;
   disabled?: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 export const CommentThread = ({
@@ -18,6 +22,9 @@ export const CommentThread = ({
   placeholder,
   emptyMessage,
   disabled,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
 }: CommentThreadProps) => {
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
@@ -75,6 +82,15 @@ export const CommentThread = ({
           {emptyMessage}
         </p>
       )}
+
+      {onLoadMore ? (
+        <LoadMore
+          hasMore={hasMore}
+          isLoading={isLoadingMore}
+          onClick={onLoadMore}
+          label="Load more comments"
+        />
+      ) : null}
 
       <form onSubmit={submit} className="space-y-2.5">
         <textarea
