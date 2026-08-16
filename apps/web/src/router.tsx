@@ -21,6 +21,12 @@ const requireSession = () => {
   }
 };
 
+const redirectIfSignedIn = () => {
+  if (store.getState().auth.token) {
+    throw redirect({ to: '/documents' });
+  }
+};
+
 const routeTree = rootRoute.addChildren([
   createRoute({
     getParentRoute: () => rootRoute,
@@ -31,11 +37,13 @@ const routeTree = rootRoute.addChildren([
     getParentRoute: () => rootRoute,
     path: '/login',
     component: LoginPage,
+    beforeLoad: redirectIfSignedIn,
   }),
   createRoute({
     getParentRoute: () => rootRoute,
     path: '/register',
     component: RegisterPage,
+    beforeLoad: redirectIfSignedIn,
   }),
   createRoute({
     getParentRoute: () => rootRoute,
