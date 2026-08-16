@@ -175,7 +175,6 @@ CI typechecks, tests and builds every project on push.
   record.
 - **One founder per account**, and documents are archived rather than destroyed,
   because deleting a fundraising audit trail on one click is the wrong default.
-- **List endpoints are not paginated.** Analytics returns every view for a
-  document in one response, which is right for a raise with tens of opens and
-  wrong at thousands. The cut is a cursor on views and the activity feed, and
-  moving the aggregation into SQL rather than the application.
+- **Every list endpoint is cursor paginated** and the aggregates are computed in
+  SQL, so a document with thousands of opens costs the same to summarise as one
+  with ten. Cursors are opaque: pass back the `nextCursor` you were given.
