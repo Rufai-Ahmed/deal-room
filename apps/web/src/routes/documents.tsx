@@ -5,6 +5,7 @@ import { AppShell } from '../components/layout/app-shell';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { EmptyState } from '../components/ui/empty-state';
+import { ErrorState } from '../components/ui/error-state';
 import { LoadMore } from '../components/ui/load-more';
 import { Spinner } from '../components/ui/spinner';
 import { DocumentActions } from '../features/documents/document-actions';
@@ -35,6 +36,11 @@ export const DocumentsPage = () => {
             <div className="flex justify-center py-16 text-ink-faint">
               <Spinner />
             </div>
+          ) : documents.isError ? (
+            <ErrorState
+              message="Your documents could not be loaded."
+              onRetry={documents.retry}
+            />
           ) : documents.items.length ? (
             <>
               <ul className="divide-y divide-rule border-y border-rule">
@@ -189,6 +195,13 @@ export const DocumentsPage = () => {
                 label="Load earlier activity"
               />
             </>
+          ) : activity.isError ? (
+            <div className="mt-4">
+              <ErrorState
+                message="Activity could not be loaded."
+                onRetry={activity.retry}
+              />
+            </div>
           ) : activity.isLoading ? (
             <div className="mt-4 space-y-3" aria-hidden="true">
               {[0, 1, 2].map((row) => (

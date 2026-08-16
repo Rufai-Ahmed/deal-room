@@ -9,6 +9,7 @@ import {
 import { AppShell } from '../components/layout/app-shell';
 import { Button } from '../components/ui/button';
 import { EmptyState } from '../components/ui/empty-state';
+import { ErrorState } from '../components/ui/error-state';
 import { LoadMore } from '../components/ui/load-more';
 import { Spinner } from '../components/ui/spinner';
 import { Stat } from '../components/ui/stat';
@@ -17,6 +18,7 @@ import { ViewTimeline } from '../features/analytics/view-timeline';
 import { DocumentActions } from '../features/documents/document-actions';
 import { CreateShareDialog } from '../features/sharing/create-share-dialog';
 import { ShareLinksPanel } from '../features/sharing/share-links-panel';
+import { useDocumentDownloadUrlMutation } from '../apis';
 import { formatDuration, formatRelative } from '../lib/format';
 import { useCursorList } from '../lib/use-cursor-list';
 
@@ -36,6 +38,7 @@ const Section = ({
 export const DocumentDetailPage = () => {
   const { documentId } = useParams({ from: '/documents/$documentId' });
   const navigate = useNavigate();
+  const [downloadUrl] = useDocumentDownloadUrlMutation();
   const [shareOpen, setShareOpen] = useState(false);
   const [showBots, setShowBots] = useState(false);
 
@@ -70,6 +73,15 @@ export const DocumentDetailPage = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={async () => {
+              const { url } = await downloadUrl(documentId).unwrap();
+              window.open(url, '_blank', 'noopener');
+            }}
+          >
+            Open file
+          </Button>
           <Button onClick={() => setShareOpen(true)}>Create share link</Button>
           {document ? (
             <DocumentActions
@@ -127,6 +139,11 @@ export const DocumentDetailPage = () => {
           <div className="flex justify-center py-10 text-ink-faint">
             <Spinner />
           </div>
+        ) : links.isError ? (
+          <ErrorState
+            message="Share links could not be loaded."
+            onRetry={links.retry}
+          />
         ) : links.items.length ? (
           <>
             <ShareLinksPanel links={links.items} />

@@ -5,6 +5,8 @@ interface QueryResult<T> {
   data?: Page<T>;
   isLoading: boolean;
   isFetching: boolean;
+  isError?: boolean;
+  refetch?: () => void;
 }
 
 type ListQuery<T, A> = (
@@ -53,6 +55,8 @@ export function useCursorList<T, A extends object>(
     items,
     isLoading: result.isLoading && items.length === 0,
     isLoadingMore: result.isFetching && cursor !== undefined,
+    isError: Boolean(result.isError) && items.length === 0,
+    retry: () => result.refetch?.(),
     hasMore: Boolean(result.data?.nextCursor),
     loadMore: () => setCursor(result.data?.nextCursor ?? undefined),
   };
