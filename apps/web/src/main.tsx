@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import { RouterProvider } from '@tanstack/react-router';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { useMeQuery } from './apis';
+import { ToastProvider } from './components/ui/toast';
 import { router } from './router';
 import { userLoaded } from './store/auth.slice';
 import { store, type RootState } from './store/store';
@@ -25,7 +26,9 @@ const SessionBootstrap = () => {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <Provider store={store}>
-      <SessionBootstrap />
+      <ToastProvider>
+        <SessionBootstrap />
+      </ToastProvider>
     </Provider>
   </StrictMode>,
 );

@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field } from '../../components/ui/field';
 import { Spinner } from '../../components/ui/spinner';
+import { useToast } from '../../components/ui/toast';
 import { formatBytes } from '../../lib/format';
 import { readPageCount } from '../../lib/pdf';
 
@@ -27,6 +28,7 @@ export const UploadDialog = ({ open, onOpenChange }: UploadDialogProps) => {
 
   const [requestUpload] = useRequestUploadMutation();
   const [createDocument] = useCreateDocumentMutation();
+  const toast = useToast();
 
   const reset = () => {
     setFile(null);
@@ -91,6 +93,7 @@ export const UploadDialog = ({ open, onOpenChange }: UploadDialogProps) => {
 
       reset();
       onOpenChange(false);
+      toast.success(`${name.trim() || file.name} added.`);
     } catch (uploadError) {
       setError(
         uploadError instanceof Error
