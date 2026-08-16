@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type {
   DocumentSummary,
   DocumentUploadTicket,
@@ -41,6 +45,10 @@ export class DocumentsService {
     ownerId: string,
     dto: CreateDocumentDto,
   ): Promise<DocumentSummary> {
+    if (!this.storage.ownsFileKey(ownerId, dto.fileKey)) {
+      throw new ForbiddenException('That upload does not belong to you');
+    }
+
     const document = await this.prisma.document.create({
       data: {
         ownerId,

@@ -11,7 +11,17 @@ export class StorageService {
 
   buildFileKey(ownerId: string, fileName: string): string {
     const extension = extname(fileName).toLowerCase().slice(0, 12);
-    return `documents/${ownerId}/${randomUUID()}${extension}`;
+    return `${this.prefixFor(ownerId)}${randomUUID()}${extension}`;
+  }
+
+  ownsFileKey(ownerId: string, fileKey: string): boolean {
+    return (
+      fileKey.startsWith(this.prefixFor(ownerId)) && !fileKey.includes('..')
+    );
+  }
+
+  private prefixFor(ownerId: string): string {
+    return `documents/${ownerId}/`;
   }
 
   createUploadTarget(fileKey: string, mimeType: string): Promise<UploadTarget> {
