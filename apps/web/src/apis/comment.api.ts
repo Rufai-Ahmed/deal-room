@@ -1,14 +1,22 @@
 import type {
   CommentView,
   CreateCommentInput,
+  Page,
+  PageQuery,
   PostViewerCommentInput,
 } from '@dealroom/shared';
 import { baseApi } from './base.api';
 
 export const commentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    shareLinkComments: builder.query<CommentView[], string>({
-      query: (shareLinkId) => ({ url: `/share-links/${shareLinkId}/comments` }),
+    shareLinkComments: builder.query<
+      Page<CommentView>,
+      { shareLinkId: string } & PageQuery
+    >({
+      query: ({ shareLinkId, ...params }) => ({
+        url: `/share-links/${shareLinkId}/comments`,
+        params,
+      }),
       providesTags: ['Comment'],
     }),
 
@@ -25,12 +33,12 @@ export const commentApi = baseApi.injectEndpoints({
     }),
 
     viewerComments: builder.query<
-      CommentView[],
-      { token: string; viewSessionToken?: string | null }
+      Page<CommentView>,
+      { token: string; viewSessionToken?: string | null } & PageQuery
     >({
-      query: ({ token, viewSessionToken }) => ({
+      query: ({ token, viewSessionToken, ...params }) => ({
         url: `/share/${token}/comments`,
-        params: viewSessionToken ? { vs: viewSessionToken } : undefined,
+        params: viewSessionToken ? { vs: viewSessionToken, ...params } : params,
       }),
       providesTags: ['Comment'],
     }),

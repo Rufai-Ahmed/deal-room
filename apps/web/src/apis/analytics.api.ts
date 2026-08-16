@@ -2,6 +2,9 @@ import type {
   ActivityItem,
   DocumentAnalytics,
   HeartbeatInput,
+  Page,
+  PageQuery,
+  ViewEvent,
 } from '@dealroom/shared';
 import { baseApi } from './base.api';
 
@@ -12,8 +15,19 @@ export const analyticsApi = baseApi.injectEndpoints({
       providesTags: ['Analytics'],
     }),
 
-    activityFeed: builder.query<ActivityItem[], void>({
-      query: () => ({ url: '/activity' }),
+    documentViews: builder.query<
+      Page<ViewEvent>,
+      { documentId: string; includeBots?: boolean } & PageQuery
+    >({
+      query: ({ documentId, ...params }) => ({
+        url: `/documents/${documentId}/views`,
+        params,
+      }),
+      providesTags: ['Analytics'],
+    }),
+
+    activityFeed: builder.query<Page<ActivityItem>, PageQuery>({
+      query: (params) => ({ url: '/activity', params }),
       providesTags: ['Activity'],
     }),
 
@@ -29,6 +43,7 @@ export const analyticsApi = baseApi.injectEndpoints({
 
 export const {
   useDocumentAnalyticsQuery,
+  useDocumentViewsQuery,
   useActivityFeedQuery,
   useHeartbeatMutation,
 } = analyticsApi;

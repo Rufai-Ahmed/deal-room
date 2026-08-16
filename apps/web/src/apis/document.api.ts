@@ -2,6 +2,8 @@ import type {
   CreateDocumentInput,
   DocumentSummary,
   DocumentUploadTicket,
+  Page,
+  PageQuery,
   RenameDocumentInput,
   RequestUploadInput,
 } from '@dealroom/shared';
@@ -9,8 +11,13 @@ import { baseApi } from './base.api';
 
 export const documentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listDocuments: builder.query<DocumentSummary[], void>({
-      query: () => ({ url: '/documents' }),
+    listDocuments: builder.query<Page<DocumentSummary>, PageQuery>({
+      query: (params) => ({ url: '/documents', params }),
+      providesTags: ['Document'],
+    }),
+
+    getDocument: builder.query<DocumentSummary, string>({
+      query: (id) => ({ url: `/documents/${id}` }),
       providesTags: ['Document'],
     }),
 
@@ -52,6 +59,7 @@ export const documentApi = baseApi.injectEndpoints({
 
 export const {
   useListDocumentsQuery,
+  useGetDocumentQuery,
   useRequestUploadMutation,
   useCreateDocumentMutation,
   useRenameDocumentMutation,

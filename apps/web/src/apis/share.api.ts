@@ -1,4 +1,6 @@
 import type {
+  Page,
+  PageQuery,
   CreateShareLinkInput,
   IdentifyViewerInput,
   ShareLinkSummary,
@@ -9,8 +11,14 @@ import { baseApi } from './base.api';
 
 export const shareApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listShareLinks: builder.query<ShareLinkSummary[], string>({
-      query: (documentId) => ({ url: `/documents/${documentId}/share-links` }),
+    listShareLinks: builder.query<
+      Page<ShareLinkSummary>,
+      { documentId: string } & PageQuery
+    >({
+      query: ({ documentId, ...params }) => ({
+        url: `/documents/${documentId}/share-links`,
+        params,
+      }),
       providesTags: ['ShareLink'],
     }),
 
