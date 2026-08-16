@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import type { SharedDocumentView } from '@dealroom/shared';
 import {
@@ -11,21 +11,26 @@ import { LogoMark } from '../components/brand/logo';
 import { Button } from '../components/ui/button';
 import { Field } from '../components/ui/field';
 import { Spinner } from '../components/ui/spinner';
+import { errorMessage, useToast } from '../components/ui/toast';
 import { CommentThread } from '../features/comments/comment-thread';
 import { PdfDocument } from '../features/viewer/pdf-document';
 import { useViewTracking } from '../features/viewer/use-view-tracking';
 import { useCursorList } from '../lib/use-cursor-list';
 
-const readSessionFromHash = (): string | null => {
-  const token = new URLSearchParams(
+const sessionKey = (token: string) => `dealroom.view.${token}`;
+
+const readSession = (token: string): string | null => {
+  const fromHash = new URLSearchParams(
     window.location.hash.replace(/^#/, ''),
   ).get('vs');
 
-  if (token) {
+  if (fromHash) {
     window.history.replaceState(null, '', window.location.pathname);
+    sessionStorage.setItem(sessionKey(token), fromHash);
+    return fromHash;
   }
 
-  return token;
+  return sessionStorage.getItem(sessionKey(token));
 };
 
 const ClosedNotice = ({ heading, body }: { heading: string; body: string }) => (
@@ -41,7 +46,7 @@ const ClosedNotice = ({ heading, body }: { heading: string; body: string }) => (
 export const ViewerPage = () => {
   const { token } = useParams({ from: '/view/$token' });
 
-  const [viewSession] = useState<string | null>(readSessionFromHash);
+  const [viewSession] = useState<string | null>(() => readSession(token));
 
   const [identifiedView, setIdentifiedView] =
     useState<SharedDocumentView | null>(null);
@@ -53,6 +58,12 @@ export const ViewerPage = () => {
 
   const data = identifiedView ?? fetched;
   const activeSession = data?.viewSessionToken ?? viewSession;
+
+  useEffect(() => {
+    if (activeSession) {
+      sessionStorage.setItem(sessionKey(token), activeSession);
+    }
+  }, [activeSession, token]);
   const { setPage } = useViewTracking(
     data?.identified ? activeSession : null,
   );
@@ -63,6 +74,7 @@ export const ViewerPage = () => {
     { skip: !data?.identified || !activeSession },
   );
   const [postComment] = usePostViewerCommentMutation();
+  const toast = useToast();
 
   if (isLoading && !data) {
     return (
@@ -162,13 +174,20 @@ export const ViewerPage = () => {
               onLoadMore={comments.loadMore}
               placeholder="Ask a question about this document"
               emptyMessage="Leave a question and it goes straight to the founder."
-              onSubmit={(body) =>
-                postComment({
-                  token,
-                  body,
-                  viewSessionToken: activeSession as string,
-                }).unwrap()
-              }
+              onSubmit={async (body) => {
+                try {
+                  await postComment({
+                    token,
+                    body,
+                    viewSessionToken: activeSession as string,
+                  }).unwrap();
+                  toast.success('Question sent.');
+                } catch (error) {
+                  toast.error(
+                    errorMessage(error, 'That question could not be sent.'),
+                  );
+                }
+              }}
             />
           </div>
         </aside>
