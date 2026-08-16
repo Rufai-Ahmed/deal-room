@@ -2,7 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type {
   DocumentSummary,
   DocumentUploadTicket,
+  Page,
 } from '@dealroom/shared';
+import { paginate } from '../common/paginate';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import {
@@ -64,34 +66,72 @@ export class DocumentsService {
     };
   }
 
-  async list(ownerId: string): Promise<DocumentSummary[]> {
-    const documents = await this.prisma.document.findMany({
+  async list(
+    ownerId: string,
+    options: { cursor?: string; limit: number },
+  ): Promise<Page<DocumentSummary>> {
+    const rows = await this.prisma.document.findMany({
       where: { ownerId, archivedAt: null },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: options.limit + 1,
+      ...(options.cursor ? { cursor: { id: options.cursor }, skip: 1 } : {}),
       include: { _count: { select: { shareLinks: true } } },
     });
 
-    if (documents.length === 0) {
-      return [];
+    const page = paginate(rows, options.limit, (row) => row.id);
+
+    if (page.items.length === 0) {
+      return { items: [], nextCursor: null };
     }
 
-    const stats = await this.viewStatsFor(documents.map((doc) => doc.id));
+    const stats = await this.viewStatsFor(page.items.map((doc) => doc.id));
 
-    return documents.map((doc) => {
-      const stat = stats.get(doc.id);
-      return {
-        id: doc.id,
-        name: doc.name,
-        mimeType: doc.mimeType,
-        sizeBytes: doc.sizeBytes,
-        pageCount: doc.pageCount,
-        createdAt: doc.createdAt.toISOString(),
-        shareLinkCount: doc._count.shareLinks,
-        totalViews: stat?.totalViews ?? 0,
-        uniqueViewers: stat?.uniqueViewers ?? 0,
-        lastViewedAt: stat?.lastViewedAt ?? null,
-      };
+    return {
+      items: page.items.map((doc) => this.toSummary(doc, stats.get(doc.id))),
+      nextCursor: page.nextCursor,
+    };
+  }
+
+  async summaryFor(
+    ownerId: string,
+    documentId: string,
+  ): Promise<DocumentSummary> {
+    await this.findOwned(ownerId, documentId);
+
+    const doc = await this.prisma.document.findUniqueOrThrow({
+      where: { id: documentId },
+      include: { _count: { select: { shareLinks: true } } },
     });
+
+    const stats = await this.viewStatsFor([documentId]);
+
+    return this.toSummary(doc, stats.get(documentId));
+  }
+
+  private toSummary(
+    doc: {
+      id: string;
+      name: string;
+      mimeType: string;
+      sizeBytes: number;
+      pageCount: number | null;
+      createdAt: Date;
+      _count: { shareLinks: number };
+    },
+    stat?: { totalViews: number; uniqueViewers: number; lastViewedAt: string | null },
+  ): DocumentSummary {
+    return {
+      id: doc.id,
+      name: doc.name,
+      mimeType: doc.mimeType,
+      sizeBytes: doc.sizeBytes,
+      pageCount: doc.pageCount,
+      createdAt: doc.createdAt.toISOString(),
+      shareLinkCount: doc._count.shareLinks,
+      totalViews: stat?.totalViews ?? 0,
+      uniqueViewers: stat?.uniqueViewers ?? 0,
+      lastViewedAt: stat?.lastViewedAt ?? null,
+    };
   }
 
   async findOwned(ownerId: string, documentId: string) {
@@ -117,9 +157,7 @@ export class DocumentsService {
       data: { name: dto.name.trim() },
     });
 
-    const [summary] = await this.list(ownerId).then((docs) =>
-      docs.filter((doc) => doc.id === documentId),
-    );
+    const summary = await this.summaryFor(ownerId, documentId);
 
     return summary;
   }

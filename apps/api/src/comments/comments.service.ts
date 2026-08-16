@@ -5,8 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { CommentView } from '@dealroom/shared';
+import type { CommentView, Page } from '@dealroom/shared';
 import { ViewSessionService } from '../analytics/view-session.service';
+import { paginate } from '../common/paginate';
 import { AppConfig } from '../config/app-config';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,9 +37,10 @@ export class CommentsService {
   async listForOwner(
     ownerId: string,
     shareLinkId: string,
-  ): Promise<CommentView[]> {
+    options: { cursor?: string; limit: number },
+  ): Promise<Page<CommentView>> {
     await this.assertOwnsLink(ownerId, shareLinkId);
-    return this.list(shareLinkId);
+    return this.list(shareLinkId, options);
   }
 
   async replyAsOwner(
@@ -79,13 +81,14 @@ export class CommentsService {
   async listForViewer(
     token: string,
     viewSessionToken: string | undefined,
-  ): Promise<CommentView[]> {
+    options: { cursor?: string; limit: number },
+  ): Promise<Page<CommentView>> {
     const link = await this.sharing.resolveActive(token);
     const session = this.sessions.tryVerify(viewSessionToken);
     if (session?.shareLinkId !== link.id) {
-      return [];
+      return { items: [], nextCursor: null };
     }
-    return this.list(link.id);
+    return this.list(link.id, options);
   }
 
   async postAsViewer(
@@ -135,13 +138,23 @@ export class CommentsService {
     return this.toView(comment);
   }
 
-  private async list(shareLinkId: string): Promise<CommentView[]> {
-    const comments = await this.prisma.comment.findMany({
+  private async list(
+    shareLinkId: string,
+    options: { cursor?: string; limit: number },
+  ): Promise<Page<CommentView>> {
+    const rows = await this.prisma.comment.findMany({
       where: { shareLinkId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      take: options.limit + 1,
+      ...(options.cursor ? { cursor: { id: options.cursor }, skip: 1 } : {}),
     });
 
-    return comments.map((comment) => this.toView(comment));
+    const page = paginate(rows, options.limit, (row) => row.id);
+
+    return {
+      items: page.items.map((comment) => this.toView(comment)),
+      nextCursor: page.nextCursor,
+    };
   }
 
   private async assertOwnsLink(ownerId: string, shareLinkId: string) {

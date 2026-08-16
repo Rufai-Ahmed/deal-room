@@ -7,12 +7,19 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { DocumentSummary, DocumentUploadTicket } from '@dealroom/shared';
+import {
+  DEFAULT_PAGE_SIZE,
+  type DocumentSummary,
+  type DocumentUploadTicket,
+  type Page,
+} from '@dealroom/shared';
 import { CurrentUser, type RequestUser } from '../common/current-user.decorator';
 import { JwtAuthGuard } from '../common/jwt-auth.guard';
+import { PageQueryDto } from '../common/page-query.dto';
 import { DocumentsService } from './documents.service';
 import {
   CreateDocumentDto,
@@ -28,8 +35,22 @@ export class DocumentsController {
   constructor(private readonly documents: DocumentsService) {}
 
   @Get()
-  list(@CurrentUser() user: RequestUser): Promise<DocumentSummary[]> {
-    return this.documents.list(user.id);
+  list(
+    @CurrentUser() user: RequestUser,
+    @Query() query: PageQueryDto,
+  ): Promise<Page<DocumentSummary>> {
+    return this.documents.list(user.id, {
+      cursor: query.cursor,
+      limit: query.limit ?? DEFAULT_PAGE_SIZE,
+    });
+  }
+
+  @Get(':id')
+  get(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+  ): Promise<DocumentSummary> {
+    return this.documents.summaryFor(user.id, id);
   }
 
   @Post('upload-ticket')

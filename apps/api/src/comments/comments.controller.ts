@@ -8,9 +8,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { CommentView } from '@dealroom/shared';
+import {
+  DEFAULT_PAGE_SIZE,
+  type CommentView,
+  type Page,
+} from '@dealroom/shared';
 import { CurrentUser, type RequestUser } from '../common/current-user.decorator';
 import { JwtAuthGuard } from '../common/jwt-auth.guard';
+import { PageQueryDto } from '../common/page-query.dto';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto, PostViewerCommentDto } from './dto/comment.dto';
 
@@ -25,8 +30,12 @@ export class CommentsController {
   listForOwner(
     @CurrentUser() user: RequestUser,
     @Param('id') id: string,
-  ): Promise<CommentView[]> {
-    return this.comments.listForOwner(user.id, id);
+    @Query() query: PageQueryDto,
+  ): Promise<Page<CommentView>> {
+    return this.comments.listForOwner(user.id, id, {
+      cursor: query.cursor,
+      limit: query.limit ?? DEFAULT_PAGE_SIZE,
+    });
   }
 
   @ApiBearerAuth()
@@ -44,8 +53,12 @@ export class CommentsController {
   listForViewer(
     @Param('token') token: string,
     @Query('vs') viewSessionToken: string | undefined,
-  ): Promise<CommentView[]> {
-    return this.comments.listForViewer(token, viewSessionToken);
+    @Query() query: PageQueryDto,
+  ): Promise<Page<CommentView>> {
+    return this.comments.listForViewer(token, viewSessionToken, {
+      cursor: query.cursor,
+      limit: query.limit ?? DEFAULT_PAGE_SIZE,
+    });
   }
 
   @Post('share/:token/comments')

@@ -7,12 +7,18 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { ShareLinkSummary } from '@dealroom/shared';
+import {
+  DEFAULT_PAGE_SIZE,
+  type Page,
+  type ShareLinkSummary,
+} from '@dealroom/shared';
 import { CurrentUser, type RequestUser } from '../common/current-user.decorator';
 import { JwtAuthGuard } from '../common/jwt-auth.guard';
+import { PageQueryDto } from '../common/page-query.dto';
 import { CreateShareLinkDto, UpdateShareLinkDto } from './dto/share.dto';
 import { SharingService } from './sharing.service';
 
@@ -27,8 +33,12 @@ export class SharingController {
   list(
     @CurrentUser() user: RequestUser,
     @Param('documentId') documentId: string,
-  ): Promise<ShareLinkSummary[]> {
-    return this.sharing.listForDocument(user.id, documentId);
+    @Query() query: PageQueryDto,
+  ): Promise<Page<ShareLinkSummary>> {
+    return this.sharing.listForDocument(user.id, documentId, {
+      cursor: query.cursor,
+      limit: query.limit ?? DEFAULT_PAGE_SIZE,
+    });
   }
 
   @Post('documents/:documentId/share-links')

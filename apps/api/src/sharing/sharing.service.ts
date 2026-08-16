@@ -5,8 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { ShareLinkStatus, ShareLinkSummary } from '@dealroom/shared';
+import type { Page, ShareLinkStatus, ShareLinkSummary } from '@dealroom/shared';
 import { generateShareToken } from '../common/crypto.util';
+import { paginate } from '../common/paginate';
 import { AppConfig } from '../config/app-config';
 import { DocumentsService } from '../documents/documents.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -57,28 +58,55 @@ export class SharingService {
   async listForDocument(
     ownerId: string,
     documentId: string,
-  ): Promise<ShareLinkSummary[]> {
+    options: { cursor?: string; limit: number },
+  ): Promise<Page<ShareLinkSummary>> {
     await this.documents.findOwned(ownerId, documentId);
 
-    const links = await this.prisma.shareLink.findMany({
+    const rows = await this.prisma.shareLink.findMany({
       where: { documentId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: options.limit + 1,
+      ...(options.cursor ? { cursor: { id: options.cursor }, skip: 1 } : {}),
       include: { _count: { select: { comments: true } } },
     });
 
-    const stats = await this.statsFor(links.map((link) => link.id));
+    const page = paginate(rows, options.limit, (row) => row.id);
+    const stats = await this.statsFor(page.items.map((link) => link.id));
 
-    return links.map((link) =>
-      this.toSummary(
-        link,
-        stats.get(link.id) ?? {
-          totalViews: 0,
-          uniqueViewers: 0,
-          lastViewedAt: null,
-          totalDurationMs: 0,
-        },
-        link._count.comments,
+    return {
+      items: page.items.map((link) =>
+        this.toSummary(
+          link,
+          stats.get(link.id) ?? {
+            totalViews: 0,
+            uniqueViewers: 0,
+            lastViewedAt: null,
+            totalDurationMs: 0,
+          },
+          link._count.comments,
+        ),
       ),
+      nextCursor: page.nextCursor,
+    };
+  }
+
+  async summaryFor(shareLinkId: string): Promise<ShareLinkSummary> {
+    const link = await this.prisma.shareLink.findUniqueOrThrow({
+      where: { id: shareLinkId },
+      include: { _count: { select: { comments: true } } },
+    });
+
+    const stats = await this.statsFor([shareLinkId]);
+
+    return this.toSummary(
+      link,
+      stats.get(shareLinkId) ?? {
+        totalViews: 0,
+        uniqueViewers: 0,
+        lastViewedAt: null,
+        totalDurationMs: 0,
+      },
+      link._count.comments,
     );
   }
 
@@ -106,12 +134,7 @@ export class SharingService {
       },
     });
 
-    const [summary] = await this.listForDocument(
-      ownerId,
-      link.documentId,
-    ).then((links) => links.filter((item) => item.id === shareLinkId));
-
-    return summary;
+    return this.summaryFor(shareLinkId);
   }
 
   async revoke(ownerId: string, shareLinkId: string): Promise<void> {
