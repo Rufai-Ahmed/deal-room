@@ -9,6 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { CopyField } from '../../components/ui/copy-field';
+import { errorMessage, useToast } from '../../components/ui/toast';
 import { formatDuration, formatRelative } from '../../lib/format';
 import { useCursorList } from '../../lib/use-cursor-list';
 import { CommentThread } from '../comments/comment-thread';
@@ -26,6 +27,7 @@ const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
   const [confirmRevoke, setRevoking] = useState(false);
   const [revoke, { isLoading: revoking }] = useRevokeShareLinkMutation();
   const [reply] = useReplyToShareLinkMutation();
+  const toast = useToast();
   const comments = useCursorList(
     useShareLinkCommentsQuery,
     { shareLinkId: link.id },
@@ -112,7 +114,14 @@ const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
         title={`Revoke the link for ${link.recipientName ?? 'this investor'}?`}
         description="The link stops working immediately and they will see a closed-link message. Engagement already recorded is kept."
         confirmLabel="Revoke link"
-        onConfirm={() => revoke(link.id).unwrap()}
+        onConfirm={async () => {
+          try {
+            await revoke(link.id).unwrap();
+            toast.success('Link revoked.');
+          } catch (error) {
+            toast.error(errorMessage(error, 'That link could not be revoked.'));
+          }
+        }}
       />
 
       {expanded ? (
@@ -124,9 +133,14 @@ const ShareLinkRow = ({ link }: { link: ShareLinkSummary }) => {
             onLoadMore={comments.loadMore}
             placeholder={`Reply to ${link.recipientName ?? 'this investor'}`}
             emptyMessage="No comments on this link yet. Anything the investor asks will land here."
-            onSubmit={(body) =>
-              reply({ shareLinkId: link.id, body }).unwrap()
-            }
+            onSubmit={async (body) => {
+              try {
+                await reply({ shareLinkId: link.id, body }).unwrap();
+                toast.success('Reply sent.');
+              } catch (error) {
+                toast.error(errorMessage(error, 'That reply could not be sent.'));
+              }
+            }}
           />
         </div>
       ) : null}

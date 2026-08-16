@@ -5,6 +5,10 @@ import { CopyField } from '../../components/ui/copy-field';
 import { Dialog } from '../../components/ui/dialog';
 import { Field } from '../../components/ui/field';
 import { Spinner } from '../../components/ui/spinner';
+import { errorMessage, useToast } from '../../components/ui/toast';
+
+const endOfDay = (date: string): string =>
+  new Date(`${date}T23:59:59.999Z`).toISOString();
 
 interface CreateShareDialogProps {
   documentId: string;
@@ -52,6 +56,7 @@ export const CreateShareDialog = ({
   const [createdUrl, setCreatedUrl] = useState<string | null>(null);
 
   const [createShareLink, { isLoading }] = useCreateShareLinkMutation();
+  const toast = useToast();
 
   const close = () => {
     setRecipientName('');
@@ -65,16 +70,20 @@ export const CreateShareDialog = ({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const link = await createShareLink({
-      documentId,
-      recipientName: recipientName.trim() || undefined,
-      recipientEmail: recipientEmail.trim() || undefined,
-      requireEmail,
-      allowDownload,
-      expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
-    }).unwrap();
+    try {
+      const link = await createShareLink({
+        documentId,
+        recipientName: recipientName.trim() || undefined,
+        recipientEmail: recipientEmail.trim() || undefined,
+        requireEmail,
+        allowDownload,
+        expiresAt: expiresAt ? endOfDay(expiresAt) : null,
+      }).unwrap();
 
-    setCreatedUrl(link.url);
+      setCreatedUrl(link.url);
+    } catch (error) {
+      toast.error(errorMessage(error, 'That link could not be created.'));
+    }
   };
 
   return (

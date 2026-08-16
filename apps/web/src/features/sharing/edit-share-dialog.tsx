@@ -5,6 +5,10 @@ import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field } from '../../components/ui/field';
 import { Spinner } from '../../components/ui/spinner';
+import { errorMessage, useToast } from '../../components/ui/toast';
+
+const endOfDay = (date: string): string =>
+  new Date(`${date}T23:59:59.999Z`).toISOString();
 
 interface EditShareDialogProps {
   link: ShareLinkSummary;
@@ -55,18 +59,24 @@ export const EditShareDialog = ({
   );
 
   const [update, { isLoading }] = useUpdateShareLinkMutation();
+  const toast = useToast();
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    await update({
-      id: link.id,
-      recipientName: recipientName.trim() || undefined,
-      recipientEmail: recipientEmail.trim() || undefined,
-      requireEmail,
-      allowDownload,
-      expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
-    }).unwrap();
-    onOpenChange(false);
+    try {
+      await update({
+        id: link.id,
+        recipientName: recipientName.trim() || undefined,
+        recipientEmail: recipientEmail.trim() || undefined,
+        requireEmail,
+        allowDownload,
+        expiresAt: expiresAt ? endOfDay(expiresAt) : null,
+      }).unwrap();
+      onOpenChange(false);
+      toast.success('Share link updated.');
+    } catch (error) {
+      toast.error(errorMessage(error, 'Those changes could not be saved.'));
+    }
   };
 
   return (
