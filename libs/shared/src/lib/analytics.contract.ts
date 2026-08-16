@@ -30,7 +30,6 @@ export interface DocumentAnalytics {
   lastViewedAt: string | null;
   botHits: number;
   pageEngagement: PageEngagement[];
-  views: ViewEvent[];
 }
 
 export interface HeartbeatInput {
