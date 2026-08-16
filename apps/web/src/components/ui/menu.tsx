@@ -28,8 +28,10 @@ export const Menu = ({
         align="end"
         sideOffset={6}
         onClick={(event) => event.stopPropagation()}
-        className="z-50 min-w-44 rounded-lg border border-rule-strong bg-paper-raised
-                   p-1 shadow-lg shadow-ink/10"
+        className="z-50 min-w-44 origin-top-right rounded-lg border border-rule-strong
+                   bg-paper-raised p-1 shadow-lg shadow-ink/10
+                   data-[state=open]:animate-[menu-in_140ms_cubic-bezier(0.16,1,0.3,1)]
+                   data-[state=closed]:animate-[menu-out_110ms_ease-in]"
       >
         {children}
       </DropdownMenu.Content>

@@ -18,12 +18,18 @@ export const Dialog = ({
 }: DialogProps) => (
   <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
     <RadixDialog.Portal>
-      <RadixDialog.Overlay className="fixed inset-0 z-40 bg-ink/25 backdrop-blur-[2px]" />
+      <RadixDialog.Overlay
+        className="fixed inset-0 z-40 bg-ink/25 backdrop-blur-[2px]
+                   data-[state=open]:animate-[overlay-in_160ms_ease-out]
+                   data-[state=closed]:animate-[overlay-out_130ms_ease-in]"
+      />
       <RadixDialog.Content
         className="fixed left-1/2 top-1/2 z-50 w-[min(30rem,calc(100vw-2rem))]
                    -translate-x-1/2 -translate-y-1/2 rounded-xl border
                    border-rule-strong bg-paper-raised p-6 shadow-2xl
-                   shadow-ink/10 focus:outline-none"
+                   shadow-ink/10 focus:outline-none
+                   data-[state=open]:animate-[dialog-in_190ms_cubic-bezier(0.16,1,0.3,1)]
+                   data-[state=closed]:animate-[dialog-out_130ms_ease-in]"
       >
         <RadixDialog.Title className="font-display text-2xl leading-tight text-ink">
           {title}
