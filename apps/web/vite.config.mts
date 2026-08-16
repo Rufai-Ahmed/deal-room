@@ -24,42 +24,7 @@ export default defineConfig(() => ({
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt'],
-      manifest: {
-        name: 'Deal Room',
-        short_name: 'Deal Room',
-        description:
-          'Share fundraising documents with investors and see exactly how they engage.',
-        theme_color: '#14523c',
-        background_color: '#fbfaf8',
-        display: 'standalone',
-        start_url: '/documents',
-        icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-          {
-            src: '/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-        ],
-      },
-      workbox: {
-        navigateFallback: null,
-        cleanupOutdatedCaches: true,
-        globPatterns: ['**/*.{js,css,svg,woff2}'],
-        navigateFallbackDenylist: [/^\/api/, /^\/s\//, /^\/view\//],
-        runtimeCaching: [
-          {
-            urlPattern: /^.*\/(api|s|view)\/.*/,
-            handler: 'NetworkOnly',
-          },
-        ],
-      },
-    }),
+    VitePWA({ selfDestroying: true }),
   ],
   build: {
     outDir: './dist',
