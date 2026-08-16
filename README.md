@@ -165,16 +165,19 @@ CI typechecks, tests and builds every project on push.
 
 ## Assumptions
 
-- **A share link is a bearer credential.** Anyone holding the URL can open the
-  document, subject to expiry and revocation. The email gate attributes a view,
-  it does not authenticate.
-- **View-only is a deterrent, not DRM.** A determined viewer can still capture
-  what they can see.
-- **Dwell time is best effort.** It accrues only while the tab is visible and is
-  clamped to the wall clock since the view opened. A strong signal, not an audit
-  record.
-- **One founder per account**, and documents are archived rather than destroyed,
-  because deleting a fundraising audit trail on one click is the wrong default.
-- **Every list endpoint is cursor paginated** and the aggregates are computed in
-  SQL, so a document with thousands of opens costs the same to summarise as one
-  with ten. Cursors are opaque: pass back the `nextCursor` you were given.
+- **Anyone with the link can open the document.** That is deliberate, because an
+  investor should not have to create an account to read your deck. You control it
+  by revoking the link or setting an expiry date. Asking for an email tells you
+  who opened it, but it is not a password.
+- **Turning off downloads is a speed bump, not a lock.** It removes the download
+  button. It cannot stop someone photographing their own screen, and no tool can.
+- **Time spent is a good signal, not a stopwatch.** It only counts while the
+  document is actually the tab in front of the viewer, and it can never claim
+  more time than has passed since they opened the link.
+- **One founder per account.** There are no shared team workspaces yet.
+- **Removing a document hides it and kills its links,** but nothing is
+  permanently erased. During a raise, losing the record of who read what is worse
+  than keeping it.
+- **Long lists load a batch at a time,** and the summary figures are counted by
+  the database rather than by the app, so a document with thousands of opens
+  loads as quickly as one with ten.
