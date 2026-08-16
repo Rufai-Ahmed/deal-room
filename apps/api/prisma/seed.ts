@@ -6,7 +6,12 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { hashPassword } from '../src/common/password.util';
 import { hashIp } from '../src/common/crypto.util';
-import { buildDeck, MODEL_SLIDES, SERIES_A_SLIDES } from './seed-deck';
+import {
+  APPENDIX_SLIDES,
+  buildDeck,
+  MODEL_SLIDES,
+  SERIES_A_SLIDES,
+} from './seed-deck';
 
 const DEMO_EMAIL = 'founder@dealroom.demo';
 const DEMO_PASSWORD = 'deal-room-demo';
@@ -92,7 +97,8 @@ const main = async (): Promise<void> => {
     },
   });
 
-  const deckKey = await writeDeck(founder.id, SERIES_A_SLIDES, 'Meridian');
+  const deckSlides = [...SERIES_A_SLIDES, ...APPENDIX_SLIDES];
+  const deckKey = await writeDeck(founder.id, deckSlides, 'Meridian');
   const modelKey = await writeDeck(founder.id, MODEL_SLIDES, 'Meridian');
 
   const deck = await prisma.document.create({
@@ -101,8 +107,8 @@ const main = async (): Promise<void> => {
       name: 'Meridian Series A deck',
       fileKey: deckKey,
       mimeType: 'application/pdf',
-      sizeBytes: 486_912,
-      pageCount: SERIES_A_SLIDES.length,
+      sizeBytes: 1_284_336,
+      pageCount: deckSlides.length,
       createdAt: daysAgo(21),
     },
   });
@@ -218,7 +224,7 @@ const main = async (): Promise<void> => {
       browser: 'Chrome',
       os: 'macOS',
       country: 'GB',
-      pages: readingPattern(SERIES_A_SLIDES.length, 32),
+      pages: readingPattern(deckSlides.length, 32),
     },
     {
       link: northgate.id,
@@ -232,7 +238,7 @@ const main = async (): Promise<void> => {
       browser: 'Mobile Safari',
       os: 'iOS',
       country: 'GB',
-      pages: readingPattern(SERIES_A_SLIDES.length, 17),
+      pages: readingPattern(deckSlides.length, 17),
     },
     {
       link: brightwater.id,
@@ -261,7 +267,7 @@ const main = async (): Promise<void> => {
       browser: 'Chrome',
       os: 'Windows',
       country: 'US',
-      pages: readingPattern(SERIES_A_SLIDES.length, 6),
+      pages: readingPattern(deckSlides.length, 6),
     },
     {
       link: ellis.id,
@@ -275,7 +281,7 @@ const main = async (): Promise<void> => {
       browser: 'Chrome',
       os: 'macOS',
       country: 'GB',
-      pages: readingPattern(SERIES_A_SLIDES.length, 41),
+      pages: readingPattern(deckSlides.length, 41),
     },
   ];
 
@@ -339,8 +345,106 @@ const main = async (): Promise<void> => {
     ],
   });
 
+
+  const investors = [
+    ['Priya Osei', 'p.osei@northgate.example', northgate.id, 'GB'],
+    ['Sam Reyes', 'sam@brightwater.example', brightwater.id, 'US'],
+    ['Joanna Ellis', 'j.ellis@ellisco.example', ellis.id, 'GB'],
+    ['Marcus Feld', 'm.feld@northgate.example', northgate.id, 'DE'],
+    ['Aisha Bello', 'a.bello@brightwater.example', brightwater.id, 'NG'],
+    ['Tom Ashworth', 't.ashworth@northgate.example', northgate.id, 'GB'],
+    ['Lena Fischer', 'l.fischer@brightwater.example', brightwater.id, 'DE'],
+  ] as const;
+
+  const devices = [
+    ['desktop', 'Chrome', 'macOS', CHROME],
+    ['desktop', 'Chrome', 'Windows', CHROME],
+    ['mobile', 'Mobile Safari', 'iOS', SAFARI_IOS],
+  ] as const;
+
+  for (let index = 0; index < 58; index += 1) {
+    const [name, email, linkId, country] = investors[index % investors.length];
+    const [device, browser, os, ua] = devices[index % devices.length];
+    const openedAt = daysAgo(2 + (index % 26), 8 + (index % 11), (index * 7) % 60);
+    const durationMs = 45_000 + ((index * 37_000) % 520_000);
+
+    const created = await prisma.documentView.create({
+      data: {
+        shareLinkId: linkId,
+        openedAt,
+        lastSeenAt: new Date(openedAt.getTime() + durationMs),
+        durationMs,
+        viewerEmail: email,
+        viewerName: name,
+        ipHash: hashIp(`203.0.113.${(index % 200) + 20}`, salt),
+        userAgent: ua,
+        isBot: false,
+        device,
+        browser,
+        os,
+        country,
+      },
+    });
+
+    await prisma.pageView.createMany({
+      data: readingPattern(deckSlides.length, 6 + (index % 22)).map((page) => ({
+        viewId: created.id,
+        page: page.page,
+        durationMs: page.durationMs,
+      })),
+    });
+  }
+
+  const questions = [
+    'Can you break out net revenue retention by cohort?',
+    'What is the churn assumption behind break-even?',
+    'How much of the pipeline is inbound?',
+    'What drives the gross margin improvement?',
+    'Which markets are next after the current nine?',
+    'How concentrated is revenue across the top ten accounts?',
+    'What is the sales cycle for the mid-market segment?',
+    'How does compliance scale with new jurisdictions?',
+    'What happens to the plan if churn doubles?',
+    'Who are the main competitors in Germany?',
+    'Is the self-serve tier profitable on its own?',
+    'How long does an HRIS integration take to build?',
+    'What is the expansion revenue split by seat versus tier?',
+    'Which assumptions are you least confident about?',
+    'What would you do with 50% more capital?',
+  ];
+
+  await prisma.comment.createMany({
+    data: questions.flatMap((body, index) => [
+      {
+        shareLinkId: northgate.id,
+        body,
+        page: (index % deckSlides.length) + 1,
+        authorEmail: 'p.osei@northgate.example',
+        authorName: 'Priya Osei',
+        createdAt: daysAgo(24 - index, 9, index * 3),
+      },
+      {
+        shareLinkId: northgate.id,
+        body: 'Good question. The detail is in the model, and I have shared that link with you as well.',
+        page: (index % deckSlides.length) + 1,
+        authorUserId: founder.id,
+        authorName: 'Ada Whitfield',
+        createdAt: daysAgo(24 - index, 14, index * 3),
+      },
+    ]),
+  });
+
+  const totalViews = await prisma.documentView.count({
+    where: { shareLink: { documentId: deck.id } },
+  });
+  const totalComments = await prisma.comment.count({
+    where: { shareLink: { documentId: deck.id } },
+  });
+
   console.log(`Seeded demo founder ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
-  console.log(`  ${deck.name}: 3 links, ${views.length} recorded opens`);
+  console.log(
+    `  ${deck.name}: ${deckSlides.length} pages, 3 links, ${totalViews} opens, ${totalComments} comments`,
+  );
   console.log(
     `  storage: ${usingS3 ? `s3 bucket ${process.env.S3_BUCKET}` : storageRoot}`,
   );

@@ -164,6 +164,38 @@ export const SERIES_A_SLIDES: Slide[] = [
   },
 ];
 
+
+const APPENDIX_TOPICS: [string, string, string[]][] = [
+  ['Cohort retention', 'Revenue retention by signup quarter', ['Every cohort since 2024 is above 118% at month 12.']],
+  ['Churn', 'Logo churn of 0.9% monthly', ['Concentrated in sub-50 employee accounts.']],
+  ['Pipeline', 'GBP 4.1m of qualified pipeline', ['Weighted at 34% based on historical close rates.']],
+  ['Sales cycle', '47 days from first call to signature', ['Down from 71 days a year ago.']],
+  ['Payback', 'CAC recovered in 11 months', ['Improving as self-serve share grows.']],
+  ['Expansion', '40% of new bookings come from existing customers', ['Seat growth, not price rises.']],
+  ['Gross margin', '78% after payment rails', ['Rail costs fall with volume tiers.']],
+  ['Headcount plan', 'From 31 to 58 over the plan', ['Engineering doubles, sales grows 2.4x.']],
+  ['Compliance', 'Nine jurisdictions live, four in review', ['Each launch is a four to six week cycle.']],
+  ['Security', 'SOC 2 Type II in progress', ['Report expected Q2 2027.']],
+  ['Integrations', 'Twelve HRIS connectors shipped', ['Covering 81% of requested systems.']],
+  ['Support', 'First response under 2 hours', ['Median resolution of 6 hours.']],
+  ['Product velocity', 'Weekly release train', ['Compliance updates ship without a customer upgrade.']],
+  ['Pricing detail', 'GBP 14 per employee per month', ['Volume tiers from 250 employees.']],
+  ['Competitive wins', 'Won 24 of 31 head to head deals', ['Losses were price, not capability.']],
+  ['Customer concentration', 'Largest account is 3.1% of revenue', ['No account above 5%.']],
+  ['Cash detail', 'Trough of GBP 1.9m in month 19', ['Break-even month 31 on base case.']],
+  ['Scenario planning', 'Downside case extends runway to 34 months', ['Achieved by pausing two market launches.']],
+  ['Cap table', 'Post-money ownership', ['Founders 54%, employees 14%, investors 32%.']],
+  ['Use of funds', 'Detailed allocation', ['60% engineering, 30% go to market, 10% compliance.']],
+  ['Board', 'Two founders, one investor, one independent', ['Independent seat filled Q3 2026.']],
+  ['References', 'Customer references available', ['Six customers have agreed to speak.']],
+  ['Glossary', 'Terms used in this deck', ['NRR, CAC, LTV defined as in the model.']],
+  ['Appendix', 'Supporting detail', ['Everything behind the headline numbers.']],
+];
+
+export const APPENDIX_SLIDES: Slide[] = APPENDIX_TOPICS.map(
+  ([eyebrow, title, body]) => ({ eyebrow, title, body }),
+);
+
 export const MODEL_SLIDES: Slide[] = [
   {
     eyebrow: 'Financial model',
